@@ -1,36 +1,57 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# École des Vendeurs de Race
 
-## Getting Started
+Plateforme de formation progressive destinée aux vendeurs professionnels. L’application fournit actuellement une base Next.js connectée à Supabase, l’authentification par email et mot de passe, des espaces privés et une administration protégée par rôle.
 
-First, run the development server:
+## Technologies
+
+- Next.js 16 et React 19
+- TypeScript
+- Supabase Auth, PostgreSQL et Row Level Security
+- Tailwind CSS
+
+## Installation locale
+
+Prérequis : Node.js 20.9 ou une version plus récente.
+
+```bash
+npm install
+copy .env.example .env.local
+npm run dev
+```
+
+Renseignez uniquement votre fichier local `.env.local`. Il est exclu de Git et ne doit jamais être partagé ou committé.
+
+L’application est ensuite accessible sur [http://localhost:3000](http://localhost:3000).
+
+## Variables d’environnement
+
+Le fichier `.env.example` documente les noms attendus avec des valeurs vides ou factices. Les clés privées, mots de passe, cookies de session et identifiants réels ne doivent jamais être ajoutés au dépôt.
+
+## Commandes
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+npx tsc --noEmit
+npm run lint
+npm run build
+npm run start
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Le projet ne possède pas encore de script de tests automatisés distinct.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Migrations Supabase
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Les migrations versionnées se trouvent dans `supabase/migrations/`. Elles doivent être relues et testées avant toute application sur un environnement partagé. Aucune commande de réinitialisation destructive ne doit être utilisée sur la base existante.
 
-## Learn More
+## Contribution GitHub
 
-To learn more about Next.js, take a look at the following resources:
+Toute évolution doit suivre la chaîne suivante :
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+1. créer ou sélectionner une issue GitHub décrivant le changement et ses critères d’acceptation ;
+2. réaliser un seul changement logique ;
+3. référencer l’issue dans chaque commit concerné ;
+4. valider TypeScript, le lint, le build et les tests disponibles ;
+5. pousser le commit ;
+6. fermer l’issue uniquement lorsque tous ses critères sont satisfaits.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Les règles détaillées se trouvent dans [CONTRIBUTING.md](CONTRIBUTING.md).

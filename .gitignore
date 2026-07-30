@@ -11,7 +11,9 @@
 !.yarn/versions
 
 # testing
-/coverage
+/coverage/
+/playwright-report/
+/test-results/
 
 # next.js
 /.next/
@@ -24,14 +26,18 @@
 .DS_Store
 *.pem
 
-# debug
+# debug and logs
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
+*.log
+logs/
 
-# env files (can opt-in for committing if needed)
+# env files
+.env
 .env*
+!.env.example
 
 # vercel
 .vercel
@@ -39,3 +45,21 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# local backups and temporary files
+.backup-*/
+*.bak
+*.tmp
+*.temp
+*.swp
+*~
+.tmp/
+tmp/
+temp/
+
+# credentials and sessions
+credentials*.json
+*credentials*.json
+*.cookie
+cookies*.json
+session*.json
