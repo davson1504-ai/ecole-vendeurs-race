@@ -3,7 +3,12 @@ import 'server-only';
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 
-export type AppRole = 'apprenant' | 'admin' | 'super_admin';
+export const APP_ROLES = ['apprenant', 'admin', 'super_admin'] as const;
+export type AppRole = (typeof APP_ROLES)[number];
+
+export function isAdminRole(role: string | null | undefined): role is 'admin' | 'super_admin' {
+  return role === 'admin' || role === 'super_admin';
+}
 
 export async function getAuthenticatedProfile() {
   const supabase = await createClient();
@@ -34,12 +39,12 @@ export async function requireAdmin(nextPath: string) {
   const auth = await requireUser(nextPath);
   const isAdmin =
     auth.profile.status === 'active' &&
-    (auth.profile.role === 'admin' || auth.profile.role === 'super_admin');
+    isAdminRole(auth.profile.role);
 
   if (!isAdmin) redirect('/dashboard?error=acces-refuse');
   return auth;
 }
 
 export function homeForRole(role: string | null | undefined) {
-  return role === 'admin' || role === 'super_admin' ? '/admin' : '/dashboard';
+  return isAdminRole(role) ? '/admin' : '/dashboard';
 }

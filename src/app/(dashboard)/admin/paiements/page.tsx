@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 import { Bell, Filter, Search } from 'lucide-react';
 import { BrandLogo } from '@/components/brand';
 import { formatFcfa, payments } from '@/lib/demo-data';
+import { isAdminRole } from '@/lib/auth/authorization';
 import { createClient } from '@/lib/supabase/server';
 import { isSupabaseConfigured } from '@/lib/supabase/server';
 
@@ -28,7 +29,7 @@ export default async function AdminPaiementsPage() {
     .eq('id', user.id)
     .maybeSingle();
 
-  if (profile?.role !== 'admin' && profile?.role !== 'super_admin') {
+  if (!isAdminRole(profile?.role)) {
     redirect('/dashboard?error=acces-refuse');
   }
 

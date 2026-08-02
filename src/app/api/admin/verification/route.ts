@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getAuthenticatedProfile } from '@/lib/auth/authorization';
+import { getAuthenticatedProfile, isAdminRole } from '@/lib/auth/authorization';
 
 export const dynamic = 'force-dynamic';
 
@@ -11,7 +11,7 @@ export async function GET() {
 
   const isAdmin =
     auth.profile.status === 'active' &&
-    (auth.profile.role === 'admin' || auth.profile.role === 'super_admin');
+    isAdminRole(auth.profile.role);
 
   if (!isAdmin) {
     return NextResponse.json({ error: 'Accès refusé.' }, { status: 403 });

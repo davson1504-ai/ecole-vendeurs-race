@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 import { BookOpen, Calendar, LayoutDashboard, Search, ShoppingCart, TrendingUp, Users } from 'lucide-react';
 import { BrandLogo, MetricCard } from '@/components/brand';
 import { payments, formatFcfa } from '@/lib/demo-data';
+import { isAdminRole } from '@/lib/auth/authorization';
 import { createClient } from '@/lib/supabase/server';
 import { isSupabaseConfigured } from '@/lib/supabase/server';
 
@@ -26,7 +27,7 @@ export default async function AdminDashboardPage() {
     .eq('id', user.id)
     .maybeSingle();
 
-  const isAdmin = profile?.role === 'admin' || profile?.role === 'super_admin';
+  const isAdmin = isAdminRole(profile?.role);
   if (!isAdmin) {
     redirect('/dashboard?error=acces-refuse');
   }

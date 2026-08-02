@@ -3,6 +3,7 @@ import { redirect } from 'next/navigation';
 import { Plus, Search } from 'lucide-react';
 import { BrandLogo, PlaceholderImage } from '@/components/brand';
 import { courses, formatFcfa } from '@/lib/demo-data';
+import { isAdminRole } from '@/lib/auth/authorization';
 import { createClient } from '@/lib/supabase/server';
 import { isSupabaseConfigured } from '@/lib/supabase/server';
 
@@ -23,7 +24,7 @@ export default async function AdminFormationsPage() {
     .eq('id', user.id)
     .maybeSingle();
 
-  if (profile?.role !== 'admin' && profile?.role !== 'super_admin') {
+  if (!isAdminRole(profile?.role)) {
     redirect('/dashboard?error=acces-refuse');
   }
 
