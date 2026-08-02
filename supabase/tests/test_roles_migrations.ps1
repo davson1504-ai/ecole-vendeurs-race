@@ -51,12 +51,18 @@ try {
     $migration1 = Join-Path $repoRoot 'supabase\migrations\0001_initial_schema.sql'
     $migration2 = Join-Path $repoRoot 'supabase\migrations\0002_secure_auth_admin_roles.sql'
     $migration3 = Join-Path $repoRoot 'supabase\migrations\0003_unify_profiles_roles.sql'
+    $migration4 = Join-Path $repoRoot 'supabase\migrations\0004_secure_business_tables_rls.sql'
+    $legacyGrants = Join-Path $PSScriptRoot 'simulate_legacy_default_grants.sql'
+    $securityAudit = Join-Path $PSScriptRoot 'assert_business_tables_security.sql'
 
     Write-Host 'Scénario A/C/D/E : base vide, trigger et RLS'
     Invoke-PsqlFile -Database postgres -LocalPath $bootstrap
     Invoke-PsqlFile -Database postgres -LocalPath $migration1
     Invoke-PsqlFile -Database postgres -LocalPath $migration2
     Invoke-PsqlFile -Database postgres -LocalPath $migration3
+    Invoke-PsqlFile -Database postgres -LocalPath $legacyGrants
+    Invoke-PsqlFile -Database postgres -LocalPath $migration4
+    Invoke-PsqlFile -Database postgres -LocalPath $securityAudit
     Invoke-PsqlFile -Database postgres -LocalPath (Join-Path $PSScriptRoot 'assert_fresh_chain_and_rls.sql')
 
     Write-Host 'Scénario B : profils existants et anciennes valeurs'
@@ -67,6 +73,9 @@ try {
     Invoke-PsqlFile -Database legacy -LocalPath (Join-Path $PSScriptRoot 'prepare_legacy_profiles.sql')
     Invoke-PsqlFile -Database legacy -LocalPath $migration2
     Invoke-PsqlFile -Database legacy -LocalPath $migration3
+    Invoke-PsqlFile -Database legacy -LocalPath $legacyGrants
+    Invoke-PsqlFile -Database legacy -LocalPath $migration4
+    Invoke-PsqlFile -Database legacy -LocalPath $securityAudit
     Invoke-PsqlFile -Database legacy -LocalPath (Join-Path $PSScriptRoot 'assert_legacy_convergence.sql')
 
     Write-Host 'Tous les tests de migrations et RLS ont réussi.' -ForegroundColor Green
