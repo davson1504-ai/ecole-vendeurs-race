@@ -48,6 +48,8 @@ function expectPage(path,needle,cookie=''){
 
 await expectPage('/',/École des Vendeurs|Ecole des Vendeurs/i);
 await expectPage('/formations',/Formations publiées/i);
+await expectPage('/a-propos',/plateforme dédiée aux compétences commerciales/i);
+await expectPage('/contact',/Envoyer mon message/i);
 await expectPage('/paiement',/Mobile Money|Validation administrative/i);
 const health=previewRequest('/api/health/supabase');
 assert.equal(health.status,200,'health Supabase indisponible');
@@ -58,19 +60,35 @@ const {data:adminAuth,error:adminAuthError}=await admin.client.auth.signInWithPa
 assert.ifError(adminAuthError);
 assert.ok(adminAuth.user,'connexion admin échouée');
 await expectPage('/admin',/Tableau de bord/i,admin.cookieHeader());
+await expectPage('/admin/messages',/Messages de contact/i,admin.cookieHeader());
+await expectPage('/admin/parametres',/Paramètres/i,admin.cookieHeader());
 
 if(process.env.SMOKE_VERIFY_ONLY==='true'){
   const learner=authClient();
   const {data:learnerAuth,error:learnerAuthError}=await learner.client.auth.signInWithPassword({email:process.env.E2E_LEARNER_EMAIL,password:process.env.E2E_LEARNER_PASSWORD});
   assert.ifError(learnerAuthError);
   assert.ok(learnerAuth.user,'connexion apprenant échouée');
-  const {data:enrollment,error:enrollmentError}=await learner.client.from('enrollments').select('course:courses(slug,title,modules(lessons(id)))').eq('active',true).limit(1).single();
+  const {data:enrollment,error:enrollmentError}=await learner.client.from('enrollments').select('course:courses(slug,title,modules(lessons(id,slug,is_preview,content)))').eq('active',true).limit(1).single();
   assert.ifError(enrollmentError);
   const course=Array.isArray(enrollment.course)?enrollment.course[0]:enrollment.course;
   assert.ok(course?.slug,'formation apprenant absente');
   await expectPage('/dashboard',new RegExp(course.title.replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),'i'),learner.cookieHeader());
+  await expectPage('/mes-cours',/Mes cours/i,learner.cookieHeader());
+  await expectPage('/progression',/Progression/i,learner.cookieHeader());
+  await expectPage('/profil',/Mon profil/i,learner.cookieHeader());
+  await expectPage('/ressources',/Ressources/i,learner.cookieHeader());
   await expectPage(`/cours/${course.slug}`,/Objectif|Aperçu public|Leçon réservée/i,learner.cookieHeader());
-  console.log(JSON.stringify({public:true,health:true,admin:true,learner:true,seededCourse:course.slug}));
+  const learnerAdmin=previewRequest('/admin',learner.cookieHeader());
+  assert.doesNotMatch(learnerAdmin.body,/Administration[\s\S]*Tableau de bord/i,'un apprenant accède à l’administration');
+  const privateLesson=course.modules.flatMap(module=>module.lessons).find(lesson=>!lesson.is_preview);
+  assert.ok(privateLesson,'leçon privée de contrôle absente');
+  const anonymousPrivate=previewRequest(`/cours/${course.slug}?lesson=${privateLesson.slug}`);
+  assert.match(anonymousPrivate.body,/réservée aux apprenants inscrits|Accès limité/i,'refus du contenu privé absent');
+  assert.doesNotMatch(anonymousPrivate.body,new RegExp(privateLesson.content.slice(0,40).replace(/[.*+?^${}()|[\]\\]/g,'\\$&'),'i'),'contenu privé exposé');
+  await learner.client.auth.signOut();
+  const signedOut=previewRequest('/dashboard',learner.cookieHeader());
+  assert.ok([302,303,307,308].includes(signedOut.status)||/connexion|se connecter/i.test(signedOut.body),'dashboard accessible après déconnexion');
+  console.log(JSON.stringify({public:true,about:true,contact:true,health:true,admin:true,adminMessages:true,learner:true,myCourses:true,progression:true,profile:true,resources:true,learnerDeniedAdmin:true,privateCourseDenied:true,logout:true,seededCourse:course.slug}));
   process.exit(0);
 }
 
