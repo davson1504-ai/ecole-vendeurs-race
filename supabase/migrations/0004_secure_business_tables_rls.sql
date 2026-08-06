@@ -7,8 +7,6 @@ begin;
 -- Toutes les tables exposées par le schéma public restent protégées par RLS.
 alter table public.profiles enable row level security;
 alter table public.courses enable row level security;
-alter table public.modules enable row level security;
-alter table public.lessons enable row level security;
 alter table public.products enable row level security;
 alter table public.orders enable row level security;
 alter table public.payments enable row level security;
@@ -34,6 +32,8 @@ from anon, authenticated;
 
 -- Modules et leçons restent entièrement fermés aux clients pendant cette phase.
 -- Aucune policy permissive ne sera créée avant le lecteur pédagogique sécurisé.
+-- RLS for these two tables is enabled later, atomically with their policies.
+-- Until then, revoked ACLs keep both client roles out.
 revoke select on table public.modules, public.lessons from anon, authenticated;
 
 -- L'inventaire local et staging ne contient actuellement aucune policy sur ces

@@ -63,3 +63,6 @@ credentials*.json
 *.cookie
 cookies*.json
 session*.json
+
+.vercel
+.env*

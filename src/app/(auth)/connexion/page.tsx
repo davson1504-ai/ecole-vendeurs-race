@@ -39,7 +39,7 @@ export default async function ConnexionPage({ searchParams }: PageProps) {
           <input type="hidden" name="next" value={next} />
           <input name="email" className="rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-[#d8ad46]" placeholder="Email" type="email" required />
           <input name="password" className="rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-[#d8ad46]" placeholder="Mot de passe" type="password" required />
-          <Link href="#" className="text-sm font-semibold text-[#071b3a] underline">Mot de passe oublié</Link>
+          <Link href="/mot-de-passe-oublie" className="text-sm font-semibold text-[#071b3a] underline">Mot de passe oublié</Link>
           <SubmitButton
             idleLabel="Se connecter"
             pendingLabel="Connexion en cours…"

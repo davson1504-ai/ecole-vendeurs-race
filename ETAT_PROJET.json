@@ -1,0 +1,159 @@
+{
+  "project": {
+    "name": "ecole-vendeurs-race",
+    "framework": "Next.js",
+    "frameworkVersion": "16.2.12",
+    "reactVersion": "19.2.4",
+    "typescriptVersion": "5.9.3",
+    "packageManager": "npm",
+    "nodeVersionRecommended": ">=20.9 (version LTS Vercel à figer)",
+    "router": "App Router"
+  },
+  "database": {
+    "provider": "Supabase",
+    "tables": [
+      "profiles",
+      "courses",
+      "modules",
+      "lessons",
+      "products",
+      "orders",
+      "payments",
+      "enrollments",
+      "affiliates",
+      "commissions"
+    ],
+    "migrations": [
+      "0001_initial_schema.sql",
+      "0002_secure_auth_admin_roles.sql",
+      "0003_unify_profiles_roles.sql",
+      "0004_secure_business_tables_rls.sql"
+    ],
+    "rlsIssues": [
+      "La chaîne active refuse par défaut tout accès métier sauf au profil propre : état sûr mais non fonctionnel.",
+      "Aucune policy d'accès aux cours/leçons par enrollment n'est migrée.",
+      "Le schéma réel distant n'a pas pu être certifié pendant cet audit."
+    ],
+    "securityIssues": [
+      "Le lecteur applicatif ne vérifie aucun enrollment.",
+      "Les anciens scripts autonomes ont des policies et objets divergents et ne doivent pas être appliqués en production.",
+      "admin_logs et les colonnes d'affiliation utilisées par le code sont absents des migrations."
+    ]
+  },
+  "environmentVariables": [
+    {
+      "name": "NEXT_PUBLIC_APP_URL",
+      "scope": "client",
+      "required": true,
+      "documented": true,
+      "usedIn": [
+        "src/app/(auth)/actions.ts",
+        "src/app/(dashboard)/affiliation/page.tsx"
+      ]
+    },
+    {
+      "name": "NEXT_PUBLIC_SUPABASE_URL",
+      "scope": "client",
+      "required": true,
+      "documented": true,
+      "usedIn": [
+        "proxy.ts",
+        "src/lib/supabase/admin.ts",
+        "src/lib/supabase/browser.ts",
+        "src/lib/supabase/server.ts",
+        "src/app/api/health/supabase/route.ts"
+      ]
+    },
+    {
+      "name": "NEXT_PUBLIC_SUPABASE_ANON_KEY",
+      "scope": "client",
+      "required": true,
+      "documented": true,
+      "usedIn": [
+        "proxy.ts",
+        "src/lib/supabase/browser.ts",
+        "src/lib/supabase/server.ts",
+        "src/app/api/health/supabase/route.ts"
+      ]
+    },
+    {
+      "name": "SUPABASE_SERVICE_ROLE_KEY",
+      "scope": "server",
+      "required": false,
+      "documented": true,
+      "usedIn": [
+        "src/lib/supabase/admin.ts"
+      ]
+    }
+  ],
+  "commands": {
+    "install": "npm ci",
+    "dev": "npm run dev",
+    "lint": "npm run lint",
+    "typecheck": "npx tsc --noEmit",
+    "test": "npm run test:migrations",
+    "build": "npm run build"
+  },
+  "results": {
+    "install": "warning",
+    "lint": "success",
+    "typecheck": "success",
+    "tests": "failed",
+    "build": "success"
+  },
+  "deployment": {
+    "vercelCompatible": true,
+    "blockers": [
+      "Absence de contrôle d'achat/enrollment sur le lecteur de cours.",
+      "Webhook CinetPay non authentifié et non idempotent.",
+      "Schémas Supabase divergents et fonctionnalités métier non migrées.",
+      "Paiement, progression, affiliation, certificat et administration encore simulés.",
+      "Quatre vulnérabilités npm de sévérité élevée.",
+      "Tests SQL non exécutés faute de Docker Desktop."
+    ],
+    "requiredActions": [
+      "Unifier et valider la chaîne de migrations sur staging.",
+      "Implémenter l'autorisation par enrollment et sécuriser Storage.",
+      "Implémenter et tester le paiement et le webhook CinetPay.",
+      "Corriger les vulnérabilités élevées sans mise à niveau aveugle.",
+      "Configurer et tester les variables et callbacks Supabase/Vercel par environnement."
+    ]
+  },
+  "priorities": {
+    "P0": [
+      "Unifier le schéma Supabase.",
+      "Protéger cours et assets par enrollment.",
+      "Sécuriser CinetPay et rendre le paiement idempotent.",
+      "Corriger les vulnérabilités élevées.",
+      "Valider migrations, RLS et Preview sur staging."
+    ],
+    "P1": [
+      "Remplacer les données fictives par les tables réelles.",
+      "Fiabiliser origine et callbacks Auth.",
+      "Ajouter la récupération de mot de passe.",
+      "Réduire les informations du healthcheck.",
+      "Ajouter les tests applicatifs et d'autorisation."
+    ],
+    "P2": [
+      "Progression réelle.",
+      "Quiz, scores et résultats.",
+      "Certificats vérifiables.",
+      "CRUD administrateur.",
+      "Affiliation réelle."
+    ],
+    "P3": [
+      "Navigation mobile et responsive des tableaux.",
+      "États loading/error/empty.",
+      "Accessibilité.",
+      "Unification des composants visuels.",
+      "SEO et métadonnées."
+    ],
+    "P4": [
+      "Observabilité et alertes.",
+      "Analytics et métriques réelles.",
+      "Cache du catalogue.",
+      "Rate limiting et CSP.",
+      "Environnements Supabase Preview et restauration testée."
+    ]
+  }
+}

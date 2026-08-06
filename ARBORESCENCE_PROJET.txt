@@ -1,0 +1,51 @@
+ecole-vendeurs-race/
+|-- AGENTS.md                         Consignes spécifiques Next.js 16 pour les agents
+|-- package.json                      Scripts et dépendances npm
+|-- package-lock.json                 Verrouillage reproductible des dépendances
+|-- next.config.ts                    Configuration Next.js actuellement minimale
+|-- proxy.ts                          Rafraîchissement de session et filtre optimiste des routes
+|-- tsconfig.json                     TypeScript strict et alias @/*
+|-- eslint.config.mjs                 ESLint Next.js/Core Web Vitals/TypeScript
+|-- postcss.config.mjs                Intégration Tailwind CSS 4
+|-- .env.example                      Noms et exemples non secrets de variables
+|-- README*.md                        Documentation de démarrage et projet
+|-- public/                           Assets statiques (principalement modèles Next.js)
+|-- src/
+|   |-- app/                          App Router Next.js
+|   |   |-- (auth)/                   Pages connexion/inscription et Server Actions Auth
+|   |   |-- (dashboard)/              Espaces authentifiés apprenant, affiliation et admin
+|   |   |   |-- admin/                Dashboard, formations et paiements administratifs
+|   |   |   |-- dashboard/            Tableau de bord apprenant
+|   |   |   `-- affiliation/          Espace affilié
+|   |   |-- api/                      Route Handlers health, admin, simulation et webhook
+|   |   |-- auth/                     Callback OAuth et déconnexion
+|   |   |-- formations/               Catalogue et détail des formations
+|   |   |-- cours/                    Lecteur de cours dynamique
+|   |   |-- paiement/                 Checkout et page de retour simulés
+|   |   |-- certificat/               Certificat de démonstration
+|   |   |-- layout.tsx                Layout racine et métadonnées globales
+|   |   `-- globals.css               Styles Tailwind et thème global
+|   |-- components/
+|   |   |-- auth/                     Boutons OAuth actifs et état de soumission
+|   |   |-- brand.tsx                 Logo, headers, footer, cartes et placeholders
+|   |   `-- site-header.tsx           Ancien en-tête encore utilisé
+|   `-- lib/
+|       |-- auth/authorization.ts      Lecture de profil et gardes user/admin serveur
+|       |-- supabase/                  Clients browser, serveur et admin
+|       |-- demo-data.ts               Formations, ventes et paiements fictifs
+|       |-- constants.ts               Nom et routes principales
+|       `-- utils.ts                   Utilitaires de classes et formatage (non importés)
+|-- supabase/
+|   |-- migrations/                    Chaîne 0001 à 0004 considérée comme reproductible
+|   |-- tests/                         Tests PostgreSQL jetables des migrations et RLS
+|   |-- audits/                        Requête d'audit staging en lecture seule (non suivie)
+|   |-- config.toml                    Configuration CLI locale (non suivie)
+|   |-- EDVR_SUPABASE_SCHEMA.sql       Ancien schéma autonome, non intégré aux migrations
+|   `-- EDVR_SUPABASE_SCHEMA_V2.sql    Schéma V2 autonome divergent, non intégré aux migrations
+|-- test-supabase-connection.ps1       Diagnostic local de connectivité
+`-- update-supabase-schema-workflow-final.sh
+                                        Ancien workflow SQL volumineux à ne pas exécuter sans revue
+
+Exclus volontairement : node_modules, .next, .git, sauvegardes .backup-*, fichiers .env,
+fichiers temporaires/générés et valeurs de secrets. Les rapports non suivis déjà présents
+dans le dépôt ont été préservés et ne sont pas détaillés comme code applicatif.

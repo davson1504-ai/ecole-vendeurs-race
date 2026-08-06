@@ -1,0 +1,2 @@
+'use client';
+export default function ErrorPage({reset}:{error:Error&{digest?:string};reset:()=>void}){return <main className="grid min-h-[60vh] place-items-center p-6"><div className="max-w-lg rounded-3xl border bg-white p-8 text-center"><h1 className="text-2xl font-extrabold text-[#071b3a]">Une erreur est survenue</h1><p className="mt-3 text-slate-600">Réessayez dans quelques instants. Aucun détail technique sensible n’est affiché.</p><button onClick={reset} className="mt-6 rounded-xl bg-[#071b3a] px-5 py-3 font-bold text-white">Réessayer</button></div></main>}

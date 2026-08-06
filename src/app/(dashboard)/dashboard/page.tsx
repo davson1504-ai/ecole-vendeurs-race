@@ -1,70 +1,18 @@
 import Link from 'next/link';
-import { redirect } from 'next/navigation';
-import { Award, BookOpen, Search, TrendingUp } from 'lucide-react';
-import { BrandLogo, MetricCard } from '@/components/brand';
-import { courses } from '@/lib/demo-data';
-import { createClient, isSupabaseConfigured } from '@/lib/supabase/server';
+import { BookOpen, CheckCircle2, LogOut } from 'lucide-react';
+import { BrandLogo } from '@/components/brand';
+import { requireUser } from '@/lib/auth/authorization';
 import { signOutAction } from '@/app/(auth)/actions';
 
-// Forcer le rendu dynamique : cette page nécessite la session Supabase
-export const dynamic = 'force-dynamic';
-
-export default async function DashboardPage() {
-  if (!isSupabaseConfigured()) {
-    redirect('/connexion?error=supabase-non-configure');
-  }
-
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-
-  if (!user) redirect('/connexion?next=/dashboard');
-
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('full_name, role')
-    .eq('id', user.id)
-    .maybeSingle();
-
-  const displayName = profile?.full_name || user.email || 'Apprenant';
-  const enrolled = courses.slice(0, 4);
-
-  return (
-    <main className="min-h-screen bg-gradient-to-br from-[#0d4c87] via-slate-50 to-[#fff7df] p-4 md:p-8">
-      <section className="mx-auto min-h-[90vh] max-w-7xl overflow-hidden rounded-3xl bg-white/95 shadow-2xl">
-        <header className="flex flex-wrap items-center justify-between gap-4 border-b border-slate-200 px-6 py-4">
-          <BrandLogo />
-          <nav className="flex flex-wrap gap-4 font-semibold text-[#071b3a]"><span className="border-b-2 border-[#071b3a] pb-2">Tableau de bord</span><span>Mes formations</span><span>Ressources</span></nav>
-          <div className="flex items-center gap-3">
-            <div className="hidden items-center gap-3 rounded-2xl border border-slate-200 px-4 py-2 text-slate-500 md:flex"><Search className="h-4 w-4" />Rechercher</div>
-            <form action={signOutAction}><button className="rounded-xl border border-slate-300 px-4 py-2 text-sm font-bold text-[#071b3a]">Déconnexion</button></form>
-          </div>
-        </header>
-        <div className="mx-auto max-w-5xl px-6 py-8">
-          <p className="mb-3 text-sm font-bold uppercase tracking-[0.2em] text-[#1f5d9e]">Compte connecté · {profile?.role ?? 'apprenant'}</p>
-          <h1 className="text-4xl font-extrabold text-[#071b3a]">Bonjour, {displayName} !<br />Prêt à exceller en vente aujourd’hui ?</h1>
-          <div className="mt-6 grid gap-5 md:grid-cols-3">
-            <MetricCard label="Formations achetées" value="4" tone="gold" icon={<BookOpen />} />
-            <MetricCard label="Progression moyenne" value="68%" tone="blue" icon={<TrendingUp />} />
-            <MetricCard label="Certificats obtenus" value="1" tone="green" icon={<Award />} />
-          </div>
-
-          <h2 className="mt-8 text-3xl font-extrabold text-[#071b3a]">Mes formations</h2>
-          <div className="mt-5 grid gap-5 md:grid-cols-2">
-            {enrolled.map((course) => (
-              <article key={course.slug} className="rounded-3xl border border-slate-200 bg-white p-6 shadow-lg">
-                <h3 className="text-xl font-extrabold text-[#071b3a]">{course.title}</h3>
-                <div className="mt-5 flex items-center gap-5">
-                  <div className="flex h-24 w-24 shrink-0 items-center justify-center rounded-full border-[10px] border-[#d8ad46] text-2xl font-extrabold text-[#071b3a]">{course.progress}%</div>
-                  <div>
-                    <p className="line-clamp-2 text-sm leading-6 text-slate-600">{course.description}</p>
-                    <Link href={'/cours/' + course.slug} className="mt-4 inline-flex rounded-xl bg-[#1f5d9e] px-5 py-3 font-bold text-white">Continuer la formation</Link>
-                  </div>
-                </div>
-              </article>
-            ))}
-          </div>
-        </div>
-      </section>
-    </main>
-  );
+export const dynamic='force-dynamic';
+export default async function DashboardPage(){
+  const {supabase,user,profile}=await requireUser('/dashboard');
+  const {data:enrollments,error}=await supabase.from('enrollments').select('id,active,enrolled_at,course:courses(id,slug,title,short_description,modules(id,lessons(id)))').eq('user_id',user.id).eq('active',true).order('enrolled_at',{ascending:false});
+  if(error) throw new Error('Impossible de charger vos inscriptions.');
+  const normalized=(enrollments??[]).map(e=>({...e,course:Array.isArray(e.course)?e.course[0]:e.course}));
+  const courseIds=normalized.map(e=>e.course).filter(Boolean).map(c=>c!.id);
+  const lessonIds=normalized.flatMap(e=>e.course?.modules??[]).flatMap(m=>m.lessons??[]).map(l=>l.id);
+  const {data:progress}=lessonIds.length?await supabase.from('lesson_progress').select('lesson_id,completed,last_viewed_at').eq('profile_id',user.id).in('lesson_id',lessonIds):{data:[]};
+  const progressMap=new Map((progress??[]).map(p=>[p.lesson_id,p]));
+  return <main className="min-h-screen bg-slate-50"><header className="border-b bg-white"><div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4"><BrandLogo/><form action={signOutAction}><button className="flex gap-2 rounded-xl border px-4 py-2 font-bold"><LogOut className="h-5 w-5"/>Déconnexion</button></form></div></header><section className="mx-auto max-w-6xl px-4 py-10"><p className="font-bold text-[#b98722]">Espace apprenant</p><h1 className="mt-2 text-4xl font-extrabold text-[#071b3a]">Bonjour, {profile.full_name||user.email}</h1>{courseIds.length===0?<div className="mt-10 rounded-3xl border bg-white p-10 text-center"><BookOpen className="mx-auto h-10 w-10 text-slate-400"/><h2 className="mt-4 text-xl font-bold">Aucune inscription active</h2><p className="mt-2 text-slate-600">Un administrateur peut vous inscrire à une formation pendant la démonstration.</p><Link href="/formations" className="mt-5 inline-flex rounded-full bg-[#d8ad46] px-5 py-3 font-bold">Voir le catalogue</Link></div>:<div className="mt-8 grid gap-6 md:grid-cols-2">{normalized.map(enrollment=>{const course=enrollment.course!;const ids=course.modules.flatMap(m=>m.lessons).map(l=>l.id);const completed=ids.filter(id=>progressMap.get(id)?.completed).length;const percent=ids.length?Math.round(completed/ids.length*100):0;return <article key={enrollment.id} className="rounded-3xl border bg-white p-6 shadow-sm"><h2 className="text-2xl font-extrabold text-[#071b3a]">{course.title}</h2><p className="mt-2 text-slate-600">{course.short_description}</p><div className="mt-5 h-3 overflow-hidden rounded-full bg-slate-200"><div className="h-full bg-green-600" style={{width:`${percent}%`}}/></div><div className="mt-2 flex justify-between text-sm font-bold"><span>{completed}/{ids.length} leçons</span><span>{percent}%</span></div><Link href={`/cours/${course.slug}`} className="mt-6 inline-flex items-center gap-2 rounded-xl bg-blue-700 px-5 py-3 font-bold text-white"><CheckCircle2 className="h-5 w-5"/>Continuer</Link></article>})}</div>}</section></main>;
 }

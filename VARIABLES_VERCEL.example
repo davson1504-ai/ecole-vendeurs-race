@@ -1,0 +1,32 @@
+# PUBLIQUE - OBLIGATOIRE - URL canonique HTTPS de l'application pour cet environnement
+NEXT_PUBLIC_APP_URL=
+
+# PUBLIQUE - OBLIGATOIRE POUR LA PREVIEW - Badge de démonstration uniquement, sans données fictives ni contournement
+NEXT_PUBLIC_DEMO_MODE=true
+
+# PUBLIQUE - OBLIGATOIRE - URL du projet Supabase de l'environnement
+NEXT_PUBLIC_SUPABASE_URL=
+
+# PUBLIQUE - OBLIGATOIRE - Clé publishable/anon Supabase, protégée par RLS
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
+
+# PRIVÉE - FACULTATIVE ACTUELLEMENT - Obligatoire seulement pour de futures opérations serveur privilégiées
+SUPABASE_SERVICE_ROLE_KEY=
+
+# PRIVÉE - FACULTATIVE ACTUELLEMENT - À ajouter lorsque le paiement CinetPay réel sera implémenté
+CINETPAY_API_KEY=
+
+# PRIVÉE - FACULTATIVE ACTUELLEMENT - À ajouter lorsque le paiement CinetPay réel sera implémenté
+CINETPAY_SITE_ID=
+
+# PRIVÉE - FACULTATIVE ACTUELLEMENT - Secret de vérification du webhook, jamais côté client
+CINETPAY_SECRET_KEY=
+
+# PRIVÉE - FACULTATIVE ACTUELLEMENT - Valeur attendue : sandbox ou production selon l'environnement
+CINETPAY_MODE=
+
+# PRIVÉE - FACULTATIVE ACTUELLEMENT - URL HTTPS publique du webhook de l'environnement
+CINETPAY_NOTIFY_URL=
+
+# PRIVÉE - FACULTATIVE ACTUELLEMENT - URL HTTPS de retour utilisateur de l'environnement
+CINETPAY_RETURN_URL=

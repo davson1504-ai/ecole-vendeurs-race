@@ -1,61 +1,6 @@
 import Link from 'next/link';
-import { redirect } from 'next/navigation';
-import { Plus, Search } from 'lucide-react';
-import { BrandLogo, PlaceholderImage } from '@/components/brand';
-import { courses, formatFcfa } from '@/lib/demo-data';
-import { isAdminRole } from '@/lib/auth/authorization';
-import { createClient } from '@/lib/supabase/server';
-import { isSupabaseConfigured } from '@/lib/supabase/server';
-
-export const dynamic = 'force-dynamic';
-
-export default async function AdminFormationsPage() {
-  if (!isSupabaseConfigured()) {
-    redirect('/connexion?error=supabase-non-configure');
-  }
-
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect('/connexion?next=/admin/formations');
-
-  const { data: profile } = await supabase
-    .from('profiles')
-    .select('role')
-    .eq('id', user.id)
-    .maybeSingle();
-
-  if (!isAdminRole(profile?.role)) {
-    redirect('/dashboard?error=acces-refuse');
-  }
-
-  return (
-    <main className="min-h-screen bg-white">
-      <header className="mx-auto flex max-w-5xl items-center justify-between px-4 py-5"><BrandLogo /><Link href="/admin" className="font-bold text-[#071b3a]">Retour admin</Link></header>
-      <section className="mx-auto max-w-5xl px-4 py-6">
-        <h1 className="text-4xl font-extrabold text-[#071b3a]">Gestion des formations</h1>
-        <div className="mt-8 flex flex-wrap items-center justify-between gap-4 rounded-2xl bg-[#071b3a] p-6">
-          <div className="flex w-full max-w-sm items-center gap-3 rounded-xl bg-white px-4 py-3"><Search className="h-4 w-4 text-slate-500" /><span className="text-slate-500">Rechercher...</span></div>
-          <button className="rounded-xl bg-green-600 px-5 py-3 font-bold text-white"><Plus className="mr-2 inline h-5 w-5" />Ajouter une formation</button>
-        </div>
-        <div className="mt-8 overflow-hidden rounded-3xl border border-[#d8ad46]/60">
-          <table className="w-full min-w-[900px] text-left">
-            <thead className="bg-[#fff7df]"><tr>{['Miniature', 'Titre de la formation', 'Catégorie', 'Prix', 'Étudiants', 'Statut', 'Actions'].map((h) => <th key={h} className="px-5 py-4">{h}</th>)}</tr></thead>
-            <tbody>
-              {courses.slice(0, 4).map((course, index) => (
-                <tr key={course.slug} className="border-t border-slate-200">
-                  <td className="px-5 py-4"><PlaceholderImage label="" className="min-h-20 w-24" /></td>
-                  <td className="px-5 py-4 font-bold text-[#071b3a]">{course.title}</td>
-                  <td className="px-5 py-4">{course.category}</td>
-                  <td className="px-5 py-4">{formatFcfa(course.priceXof)}</td>
-                  <td className="px-5 py-4">{450 - index * 80}</td>
-                  <td className="px-5 py-4"><span className={index === 1 ? 'rounded-full bg-slate-200 px-3 py-1 font-bold text-slate-700' : 'rounded-full bg-green-100 px-3 py-1 font-bold text-green-700'}>{index === 1 ? 'Brouillon' : 'Publié'}</span></td>
-                  <td className="px-5 py-4"><span className="rounded-xl bg-blue-700 px-3 py-2 text-white">Modifier</span></td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </section>
-    </main>
-  );
-}
+import { AdminShell } from '@/components/admin-nav';
+import { requireAdmin } from '@/lib/auth/authorization';
+import { formatXof } from '@/lib/courses';
+export const dynamic='force-dynamic';
+export default async function AdminCourses({searchParams}:{searchParams:Promise<{q?:string;status?:string}>}){const params=await searchParams;const {supabase}=await requireAdmin('/admin/formations');let query=supabase.from('courses').select('id,title,slug,status,level,price_xof,updated_at').order('updated_at',{ascending:false});if(params.q)query=query.ilike('title',`%${params.q}%`);if(['draft','published','archived'].includes(params.status??''))query=query.eq('status',params.status!);const {data,error}=await query;if(error)throw new Error('Formations indisponibles.');return <AdminShell><div className="flex flex-wrap items-center justify-between gap-4"><div><p className="font-bold text-[#b98722]">Administration</p><h1 className="text-4xl font-extrabold text-[#071b3a]">Formations</h1></div><Link href="/admin/formations/nouvelle" className="rounded-xl bg-green-700 px-5 py-3 font-bold text-white">Nouvelle formation</Link></div><form className="mt-6 grid gap-3 rounded-2xl bg-white p-4 sm:grid-cols-[1fr_180px_auto]"><label><span className="sr-only">Rechercher</span><input name="q" defaultValue={params.q} placeholder="Rechercher une formation" className="w-full rounded-xl border px-4 py-3"/></label><select name="status" defaultValue={params.status??''} className="rounded-xl border px-4"><option value="">Tous les statuts</option><option value="draft">Brouillon</option><option value="published">Publiée</option><option value="archived">Archivée</option></select><button className="rounded-xl bg-[#071b3a] px-5 font-bold text-white">Filtrer</button></form><div className="mt-6 overflow-x-auto rounded-2xl border bg-white"><table className="w-full min-w-[760px] text-left"><thead className="bg-slate-100"><tr>{['Titre','Niveau','Prix','Statut','Actions'].map(h=><th key={h} className="p-4">{h}</th>)}</tr></thead><tbody>{(data??[]).map(c=><tr key={c.id} className="border-t"><td className="p-4 font-bold">{c.title}</td><td className="p-4">{c.level}</td><td className="p-4">{formatXof(c.price_xof)}</td><td className="p-4">{c.status}</td><td className="p-4"><div className="flex gap-3"><Link className="font-bold text-blue-700" href={`/admin/formations/${c.id}/modifier`}>Modifier</Link><Link className="font-bold text-green-700" href={`/admin/formations/${c.id}/modules`}>Modules</Link><Link className="font-bold text-slate-700" href={`/formations/${c.slug}`}>Prévisualiser</Link></div></td></tr>)}</tbody></table></div></AdminShell>}

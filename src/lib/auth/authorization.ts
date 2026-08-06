@@ -32,6 +32,7 @@ export async function getAuthenticatedProfile() {
 export async function requireUser(nextPath: string) {
   const auth = await getAuthenticatedProfile();
   if (!auth) redirect(`/connexion?next=${encodeURIComponent(nextPath)}`);
+  if (auth.profile.status !== 'active') redirect('/connexion?error=compte-indisponible');
   return auth;
 }
 

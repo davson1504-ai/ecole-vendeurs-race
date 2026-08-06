@@ -52,6 +52,8 @@ try {
     $migration2 = Join-Path $repoRoot 'supabase\migrations\0002_secure_auth_admin_roles.sql'
     $migration3 = Join-Path $repoRoot 'supabase\migrations\0003_unify_profiles_roles.sql'
     $migration4 = Join-Path $repoRoot 'supabase\migrations\0004_secure_business_tables_rls.sql'
+    $migration5 = Join-Path $repoRoot 'supabase\migrations\20260805235140_complete_learning_platform.sql'
+    $seed = Join-Path $repoRoot 'supabase\seed.sql'
     $legacyGrants = Join-Path $PSScriptRoot 'simulate_legacy_default_grants.sql'
     $securityAudit = Join-Path $PSScriptRoot 'assert_business_tables_security.sql'
 
@@ -64,6 +66,9 @@ try {
     Invoke-PsqlFile -Database postgres -LocalPath $migration4
     Invoke-PsqlFile -Database postgres -LocalPath $securityAudit
     Invoke-PsqlFile -Database postgres -LocalPath (Join-Path $PSScriptRoot 'assert_fresh_chain_and_rls.sql')
+    Invoke-PsqlFile -Database postgres -LocalPath $migration5
+    Invoke-PsqlFile -Database postgres -LocalPath $seed
+    Invoke-PsqlFile -Database postgres -LocalPath (Join-Path $PSScriptRoot 'assert_learning_platform.sql')
 
     Write-Host 'Scénario B : profils existants et anciennes valeurs'
     docker exec $containerName createdb -U postgres legacy
@@ -77,6 +82,9 @@ try {
     Invoke-PsqlFile -Database legacy -LocalPath $migration4
     Invoke-PsqlFile -Database legacy -LocalPath $securityAudit
     Invoke-PsqlFile -Database legacy -LocalPath (Join-Path $PSScriptRoot 'assert_legacy_convergence.sql')
+    Invoke-PsqlFile -Database legacy -LocalPath $migration5
+    Invoke-PsqlFile -Database legacy -LocalPath $seed
+    Invoke-PsqlFile -Database legacy -LocalPath (Join-Path $PSScriptRoot 'assert_learning_platform.sql')
 
     Write-Host 'Tous les tests de migrations et RLS ont réussi.' -ForegroundColor Green
 }

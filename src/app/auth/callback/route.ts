@@ -5,6 +5,7 @@ import { homeForRole } from '@/lib/auth/authorization';
 export async function GET(request: Request) {
   const requestUrl = new URL(request.url);
   const code = requestUrl.searchParams.get('code');
+  const requestedNext = requestUrl.searchParams.get('next');
   let destination = '/dashboard';
 
   if (code) {
@@ -16,7 +17,8 @@ export async function GET(request: Request) {
         .select('role')
         .eq('id', data.user.id)
         .maybeSingle();
-      destination = homeForRole(profile?.role);
+      const safeDestination = requestedNext?.startsWith('/') && !requestedNext.startsWith('//') ? requestedNext : null;
+      destination = safeDestination ?? homeForRole(profile?.role);
     }
   }
 

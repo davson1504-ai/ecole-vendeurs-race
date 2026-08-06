@@ -1,0 +1,1 @@
+export default function Loading(){return <main className="grid min-h-[60vh] place-items-center"><div role="status" className="animate-pulse rounded-full bg-amber-100 px-6 py-3 font-bold text-amber-900">Chargement…</div></main>}

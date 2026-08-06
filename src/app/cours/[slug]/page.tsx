@@ -1,70 +1,17 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { Check, Download, Lock, Play, Search } from 'lucide-react';
-import { BrandLogo, PlaceholderImage } from '@/components/brand';
-import { getCourseBySlug } from '@/lib/demo-data';
+import { CheckCircle2, Circle, Lock, Play } from 'lucide-react';
+import { createClient } from '@/lib/supabase/server';
+import { updateLessonProgress } from './actions';
 
-type PageProps = { params: Promise<{ slug: string }> };
-
-export default async function CoursePlayerPage({ params }: PageProps) {
-  const { slug } = await params;
-  const course = getCourseBySlug(slug);
-  if (!course) notFound();
-  const firstModule = course.modules[0];
-
-  return (
-    <main className="grid min-h-screen bg-slate-50 lg:grid-cols-[300px_1fr]">
-      <aside className="bg-[#071b3a] p-5 text-white">
-        <BrandLogo light />
-        <div className="mt-8 grid gap-6">
-          {course.modules.map((module, moduleIndex) => (
-            <div key={module.title}>
-              <h2 className="font-extrabold">{module.title}</h2>
-              <div className="mt-3 grid gap-2">
-                {module.lessons.map((lesson, index) => {
-                  const active = moduleIndex === 0 && index === 0;
-                  return (
-                    <div key={lesson} className={active ? 'flex items-center gap-3 rounded-2xl bg-blue-100 p-3 text-[#071b3a]' : 'flex items-center gap-3 rounded-2xl p-3 text-slate-300'}>
-                      {active ? <Play className="h-4 w-4" /> : <Lock className="h-4 w-4" />}
-                      <span className="text-sm">Leçon {moduleIndex + 1}.{index + 1} : {lesson}</span>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-          ))}
-        </div>
-      </aside>
-
-      <section>
-        <header className="flex items-center justify-between border-b border-slate-200 bg-white px-6 py-4">
-          <h1 className="text-2xl font-extrabold text-[#071b3a]">Lecteur de cours</h1>
-          <div className="hidden items-center gap-3 rounded-2xl bg-slate-100 px-4 py-2 text-slate-500 md:flex"><Search className="h-4 w-4" />Rechercher</div>
-        </header>
-        <div className="mx-auto max-w-4xl px-4 py-8">
-          <div className="relative overflow-hidden rounded-3xl shadow-2xl">
-            <PlaceholderImage label="Vidéo de cours" className="min-h-[360px] rounded-none" />
-            <div className="absolute inset-0 flex items-center justify-center">
-              <span className="flex h-24 w-24 items-center justify-center rounded-full bg-black/50 text-white"><Play className="h-12 w-12" /></span>
-            </div>
-          </div>
-          <h2 className="mt-8 text-3xl font-extrabold text-[#071b3a]">Leçon 1.1 : {firstModule.lessons[0]}</h2>
-          <p className="mt-3 text-lg leading-8 text-slate-700">Cette leçon explore les attitudes mentales essentielles pour réussir dans la vente : écoute, discipline, empathie, résilience et clarté dans l’argumentaire.</p>
-          <div className="mt-6 grid gap-6 rounded-3xl border border-slate-200 bg-white p-6 md:grid-cols-2">
-            <div>
-              <button className="rounded-2xl bg-[#1f5d9e] px-5 py-3 font-bold text-white"><Check className="mr-2 inline h-4 w-4" />Marquer comme terminé</button>
-            </div>
-            <div>
-              <h3 className="font-extrabold text-[#071b3a]">Ressources téléchargeables</h3>
-              <p className="mt-2 flex items-center gap-2 text-slate-700">Guide PDF : état d’esprit du vendeur.pdf <Download className="h-4 w-4" /></p>
-            </div>
-          </div>
-          <div className="mt-6 flex gap-4">
-            <Link href="/dashboard" className="flex-1 rounded-2xl bg-slate-300 px-5 py-4 text-center font-bold text-slate-700">Leçon précédente</Link>
-            <Link href="/dashboard" className="flex-1 rounded-2xl bg-blue-600 px-5 py-4 text-center font-bold text-white">Leçon suivante</Link>
-          </div>
-        </div>
-      </section>
-    </main>
-  );
+export const dynamic='force-dynamic';
+export default async function CoursePlayer({params,searchParams}:{params:Promise<{slug:string}>;searchParams:Promise<{lesson?:string}>}){
+  const [{slug},{lesson:requested}]=await Promise.all([params,searchParams]); const supabase=await createClient();
+  const [{data:{user}},{data:course}]=await Promise.all([supabase.auth.getUser(),supabase.from('courses').select('id,slug,title,status,modules(id,title,position,lessons(id,slug,title,objective,content,exercise,duration_minutes,position,is_preview))').eq('slug',slug).eq('status','published').maybeSingle()]);
+  if(!course) notFound();
+  const modules=(course.modules??[]).toSorted((a,b)=>a.position-b.position).map(m=>({...m,lessons:(m.lessons??[]).toSorted((a,b)=>a.position-b.position)}));
+  const lessons=modules.flatMap(m=>m.lessons); const lesson=lessons.find(l=>l.slug===requested)??lessons[0]; if(!lesson) notFound();
+  const {data:progress}=user?await supabase.from('lesson_progress').select('lesson_id,completed').eq('profile_id',user.id):{data:[]};
+  const done=new Set((progress??[]).filter(p=>p.completed).map(p=>p.lesson_id)); const index=lessons.findIndex(l=>l.id===lesson.id); const previous=lessons[index-1]; const next=lessons[index+1];
+  return <main className="grid min-h-screen bg-slate-50 lg:grid-cols-[320px_1fr]"><aside className="bg-[#071b3a] p-5 text-white"><Link href={`/formations/${slug}`} className="text-sm text-[#f5df99]">← Retour à la formation</Link><h1 className="mt-4 text-xl font-extrabold">{course.title}</h1><div className="mt-7 space-y-6">{modules.map(m=><section key={m.id}><h2 className="font-bold">{m.position}. {m.title}</h2><div className="mt-2 space-y-1">{m.lessons.map(l=><Link key={l.id} href={`/cours/${slug}?lesson=${l.slug}`} className={`flex items-center gap-2 rounded-xl p-3 text-sm ${l.id===lesson.id?'bg-white text-[#071b3a]':'text-slate-300 hover:bg-white/10'}`}>{done.has(l.id)?<CheckCircle2 className="h-4 w-4 text-green-500"/>:l.is_preview?<Play className="h-4 w-4"/>:<Lock className="h-4 w-4"/>}{l.title}</Link>)}</div></section>)}</div></aside><section><header className="border-b bg-white px-6 py-4"><p className="text-sm font-bold text-[#b98722]">{lesson.is_preview?'Aperçu public':'Leçon réservée aux inscrits'}</p></header><article className="mx-auto max-w-4xl px-5 py-10"><h2 className="text-4xl font-extrabold text-[#071b3a]">{lesson.title}</h2><p className="mt-4 rounded-2xl bg-blue-50 p-5 font-semibold text-blue-950">Objectif : {lesson.objective}</p><div className="mt-7 whitespace-pre-line text-lg leading-8 text-slate-700">{lesson.content}</div>{lesson.exercise&&<div className="mt-8 rounded-3xl border border-amber-200 bg-amber-50 p-6"><h3 className="font-extrabold text-amber-950">Mise en application</h3><p className="mt-2 text-amber-900">{lesson.exercise}</p></div>}{user&&<form action={updateLessonProgress} className="mt-8"><input type="hidden" name="lessonId" value={lesson.id}/><input type="hidden" name="courseSlug" value={slug}/><input type="hidden" name="completed" value={done.has(lesson.id)?'false':'true'}/><button className="flex items-center gap-2 rounded-xl bg-green-700 px-5 py-3 font-bold text-white">{done.has(lesson.id)?<Circle className="h-5 w-5"/>:<CheckCircle2 className="h-5 w-5"/>}{done.has(lesson.id)?'Marquer à reprendre':'Marquer comme terminée'}</button></form>}<nav className="mt-10 grid gap-3 sm:grid-cols-2">{previous?<Link href={`/cours/${slug}?lesson=${previous.slug}`} className="rounded-xl border bg-white px-5 py-4 font-bold">← {previous.title}</Link>:<span/>}{next&&<Link href={`/cours/${slug}?lesson=${next.slug}`} className="rounded-xl bg-blue-700 px-5 py-4 text-right font-bold text-white">{next.title} →</Link>}</nav></article></section></main>;
 }

@@ -16,13 +16,18 @@ begin
   join pg_namespace n on n.oid = c.relnamespace
   where n.nspname = 'public'
     and c.relname = any (array[
-      'profiles', 'courses', 'modules', 'lessons', 'products',
+      'profiles', 'courses', 'products',
       'orders', 'payments', 'enrollments', 'affiliates', 'commissions'
     ])
     and not c.relrowsecurity;
 
   if missing_rls is not null then
     raise exception 'Tables métier sans RLS: %.', missing_rls;
+  end if;
+
+  if (select relrowsecurity from pg_class where oid = 'public.modules'::regclass)
+     or (select relrowsecurity from pg_class where oid = 'public.lessons'::regclass) then
+    raise exception '0004 must not enable RLS on modules/lessons without policies.';
   end if;
 
   foreach table_name in array array[
