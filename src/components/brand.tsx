@@ -1,6 +1,9 @@
 import Link from 'next/link';
 import type { ReactNode } from 'react';
 import { BookOpen, GraduationCap, ShieldCheck } from 'lucide-react';
+import { createClient } from '@/lib/supabase/server';
+import { isAdminRole } from '@/lib/auth/authorization';
+import { signOutAction } from '@/app/(auth)/actions';
 
 export function BrandLogo({ compact = false, light = false }: { compact?: boolean; light?: boolean }) {
   return (
@@ -18,7 +21,11 @@ export function BrandLogo({ compact = false, light = false }: { compact?: boolea
   );
 }
 
-export function PublicHeader({ active = '' }: { active?: string }) {
+export async function PublicHeader({ active = '' }: { active?: string }) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  const { data: profile } = user ? await supabase.from('profiles').select('full_name,role,status').eq('id', user.id).maybeSingle() : { data: null };
+  const admin = isAdminRole(profile?.role) && profile?.status === 'active';
   const item = (href: string, label: string, key: string) => (
     <Link
       href={href}
@@ -34,23 +41,19 @@ export function PublicHeader({ active = '' }: { active?: string }) {
 
   return (
     <header className="sticky top-0 z-40 border-b border-slate-200 bg-white/95 backdrop-blur">
-      <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4">
+      <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-4 py-4">
         <BrandLogo />
         <nav className="hidden items-center gap-2 md:flex">
           {item('/', 'Accueil', 'home')}
           {item('/formations', 'Formations', 'formations')}
-          {item('/affiliation', 'Affiliation', 'affiliation')}
-          {item('/dashboard', 'Mon espace', 'dashboard')}
-          {item('/admin', 'Admin', 'admin')}
+          {user ? item(admin ? '/admin' : '/dashboard', admin ? 'Administration' : 'Mon espace', admin ? 'admin' : 'dashboard') : null}
         </nav>
         <div className="flex items-center gap-2">
-          <Link href="/connexion" className="hidden rounded-full border border-[#071b3a] px-4 py-2 text-sm font-semibold text-[#071b3a] md:inline-flex">
-            Se connecter
-          </Link>
-          <Link href="/inscription" className="rounded-full bg-[#071b3a] px-4 py-2 text-sm font-semibold text-white">
-            S’inscrire
-          </Link>
+          {user ? <><span className="hidden text-sm font-semibold text-[#071b3a] sm:inline">{profile?.full_name || user.email}</span><form action={signOutAction}><button className="rounded-full bg-[#071b3a] px-4 py-2 text-sm font-semibold text-white">Déconnexion</button></form></> : <><Link href="/connexion" className="hidden rounded-full border border-[#071b3a] px-4 py-2 text-sm font-semibold text-[#071b3a] sm:inline-flex">Se connecter</Link><Link href="/inscription" className="rounded-full bg-[#071b3a] px-4 py-2 text-sm font-semibold text-white">S’inscrire</Link></>}
         </div>
+        <nav className="order-3 flex w-full items-center justify-center gap-5 border-t border-slate-100 pt-3 text-sm font-semibold md:hidden">
+          <Link href="/">Accueil</Link><Link href="/formations">Formations</Link>{user ? <Link href={admin?'/admin':'/dashboard'}>{admin?'Administration':'Mon espace'}</Link> : <Link href="/connexion">Se connecter</Link>}
+        </nav>
       </div>
     </header>
   );
@@ -68,7 +71,6 @@ export function SiteFooter() {
           <p className="font-bold text-[#d8ad46]">Navigation</p>
           <div className="mt-3 grid gap-2 text-sm text-slate-300">
             <Link href="/formations">Formations</Link>
-            <Link href="/affiliation">Affiliation</Link>
             <Link href="/dashboard">Mon espace</Link>
           </div>
         </div>

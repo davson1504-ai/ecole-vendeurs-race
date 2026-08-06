@@ -42,20 +42,26 @@ async function appOrigin() {
   return 'http://localhost:3000';
 }
 
-export async function signUpAction(formData: FormData) {
-  const fullName = cleanText(formData.get('full_name'));
-  const email = cleanText(formData.get('email')).toLowerCase();
-  const phone = cleanText(formData.get('phone'));
-  const password = cleanText(formData.get('password'));
-  const affiliateCode = cleanText(formData.get('affiliate_code')).toUpperCase();
+export type SignUpState = { errors?: Record<string, string[]>; message?: string };
 
-  if (!z.string().min(2).safeParse(fullName).success || !z.string().email().safeParse(email).success || !password) {
-    redirect(withMessage('/inscription', 'error', 'Nom, email et mot de passe sont obligatoires.'));
-  }
+const signUpSchema = z.object({
+  full_name: z.string().trim().min(2, 'Saisissez votre nom complet.'),
+  email: z.string().trim().email('Saisissez une adresse email valide.'),
+  password: z.string().min(8, 'Utilisez au moins 8 caractères.'),
+  password_confirmation: z.string(),
+}).refine((values) => values.password === values.password_confirmation, {
+  path: ['password_confirmation'], message: 'Les mots de passe ne correspondent pas.',
+});
 
-  if (password.length < 6) {
-    redirect(withMessage('/inscription', 'error', 'Le mot de passe doit contenir au moins 6 caractères.'));
-  }
+export async function signUpAction(_state: SignUpState, formData: FormData): Promise<SignUpState> {
+  const parsed = signUpSchema.safeParse({
+    full_name: cleanText(formData.get('full_name')),
+    email: cleanText(formData.get('email')).toLowerCase(),
+    password: cleanText(formData.get('password')),
+    password_confirmation: cleanText(formData.get('password_confirmation')),
+  });
+  if (!parsed.success) return { errors: parsed.error.flatten().fieldErrors };
+  const { full_name: fullName, email, password } = parsed.data;
 
   const origin = await appOrigin();
   const supabase = await createClient();
@@ -64,21 +70,19 @@ export async function signUpAction(formData: FormData) {
     email,
     password,
     options: {
-      emailRedirectTo: `${origin}/auth/callback?next=/dashboard`,
+      emailRedirectTo: `${origin}/auth/callback?next=/onboarding`,
       data: {
         full_name: fullName,
-        phone,
-        affiliate_code: affiliateCode,
       },
     },
   });
 
   if (error) {
-    redirect(withMessage('/inscription', 'error', authErrorInFrench(error.message)));
+    return { message: authErrorInFrench(error.message) };
   }
 
   if (data.session) {
-    redirect('/dashboard');
+    redirect('/onboarding');
   }
 
   redirect(withMessage('/connexion', 'message', 'Compte créé. Connectez-vous ou confirmez votre email si Supabase le demande.'));

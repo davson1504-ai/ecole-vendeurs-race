@@ -19,14 +19,19 @@ begin
        array['Définir des objectifs commerciaux','Suivre les indicateurs de performance','Améliorer le taux de conversion','Développer le portefeuille client','Construire un plan d’action commercial'])
     ) as x(slug,title,level,price_xof,duration_minutes,module_titles)
   loop
-    insert into public.courses(slug,title,short_description,description,status,price_xof,level,duration_minutes)
+    insert into public.courses(slug,title,short_description,description,image_url,status,price_xof,level,duration_minutes)
     values (course_record.slug, course_record.title,
       'Un parcours pratique pour renforcer durablement vos compétences commerciales.',
       'Cette formation associe méthodes concrètes, exemples terrain et exercices applicables dès votre prochaine action commerciale.',
+      case course_record.slug
+        when 'les-fondamentaux-de-la-vente' then '/images/formations/fondamentaux-vente.webp'
+        when 'techniques-de-vente-terrain' then '/images/formations/vente-terrain.webp'
+        else '/images/formations/excellence-commerciale.webp'
+      end,
       'published', course_record.price_xof, course_record.level, course_record.duration_minutes)
     on conflict (slug) do update set
       title=excluded.title, short_description=excluded.short_description,
-      description=excluded.description, status=excluded.status, price_xof=excluded.price_xof,
+      description=excluded.description, image_url=excluded.image_url, status=excluded.status, price_xof=excluded.price_xof,
       level=excluded.level, duration_minutes=excluded.duration_minutes, updated_at=now();
 
     for module_position in 1..5 loop

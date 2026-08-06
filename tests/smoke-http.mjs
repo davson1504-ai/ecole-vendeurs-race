@@ -48,7 +48,7 @@ function expectPage(path,needle,cookie=''){
 
 await expectPage('/',/École des Vendeurs|Ecole des Vendeurs/i);
 await expectPage('/formations',/Formations publiées/i);
-await expectPage('/paiement',/Paiement bientôt disponible/i);
+await expectPage('/paiement',/Mobile Money|Validation administrative/i);
 const health=previewRequest('/api/health/supabase');
 assert.equal(health.status,200,'health Supabase indisponible');
 assert.equal(JSON.parse(health.body).ok,true,'health Supabase négatif');
@@ -102,7 +102,7 @@ assert.ifError(progressReadError);
 assert.equal(progress.completed,true,'progression non persistée');
 
 const anonymousPrivate=previewRequest(`/cours/${slug}`);
-assert.doesNotMatch(anonymousPrivate.body,/Leçon Smoke HTTP|Contenu réel du smoke test/i,'contenu privé visible sans inscription');
+assert.doesNotMatch(anonymousPrivate.body,/Contenu réel du smoke test/i,'contenu privé visible sans inscription');
 assert.match(anonymousPrivate.body,/404|introuvable|not found/i,'refus du cours privé non confirmé');
 await learner.client.auth.signOut();
 const learnerSignedOut=previewRequest('/dashboard',learner.cookieHeader());

@@ -1,6 +1,5 @@
 import Link from 'next/link';
 import { BrandLogo } from '@/components/brand';
-import { SocialAuthButtons } from '@/components/auth/social-auth-buttons';
 import { signInAction } from '../actions';
 import { SubmitButton } from '@/components/auth/submit-button';
 
@@ -25,17 +24,7 @@ export default async function ConnexionPage({ searchParams }: PageProps) {
         {params.message ? <p className="mt-5 rounded-xl bg-green-50 px-4 py-3 text-sm font-semibold text-green-700">{params.message}</p> : null}
         {params.error ? <p className="mt-5 rounded-xl bg-red-50 px-4 py-3 text-sm font-semibold text-red-700">{params.error}</p> : null}
 
-        <div className="mt-7">
-          <SocialAuthButtons next={next} />
-        </div>
-
-        <div className="my-6 flex items-center gap-3 text-xs font-bold uppercase tracking-[0.2em] text-slate-400">
-          <span className="h-px flex-1 bg-slate-200" />
-          ou
-          <span className="h-px flex-1 bg-slate-200" />
-        </div>
-
-        <form action={signInAction} className="grid gap-4">
+        <form action={signInAction} className="mt-7 grid gap-4">
           <input type="hidden" name="next" value={next} />
           <input name="email" className="rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-[#d8ad46]" placeholder="Email" type="email" required />
           <input name="password" className="rounded-xl border border-slate-300 px-4 py-3 outline-none focus:border-[#d8ad46]" placeholder="Mot de passe" type="password" required />

@@ -1,12 +1,35 @@
+import Image from 'next/image';
 import Link from 'next/link';
 import { ArrowRight, BookOpen, ShieldCheck, TrendingUp } from 'lucide-react';
-import { PublicHeader, PlaceholderImage, SiteFooter } from '@/components/brand';
+import { PublicHeader, SiteFooter } from '@/components/brand';
+import { CourseImage } from '@/components/course-image';
 import { formatDuration, listPublishedCourses } from '@/lib/courses';
 
-export const dynamic='force-dynamic';
-export default async function Home(){
-  const courses=(await listPublishedCourses()).slice(0,3);
-  return <main className="min-h-screen bg-white"><PublicHeader active="home"/>
-    <section className="evr-navy-panel text-white"><div className="mx-auto grid max-w-7xl items-center gap-10 px-4 py-20 lg:grid-cols-2"><div><p className="font-bold uppercase tracking-[.22em] text-[#f5df99]">École des Vendeurs de Race</p><h1 className="mt-5 text-5xl font-black leading-tight md:text-6xl">Développez une performance commerciale durable.</h1><p className="mt-6 max-w-2xl text-lg leading-8 text-slate-200">Des parcours progressifs, concrets et connectés à votre réalité terrain.</p><div className="mt-8 flex flex-wrap gap-4"><Link href="/formations" className="rounded-full bg-[#d8ad46] px-6 py-3 font-bold text-[#071b3a]">Voir les formations</Link><Link href="/inscription" className="rounded-full border border-white/30 px-6 py-3 font-bold">Créer mon espace</Link></div></div><PlaceholderImage label="Excellence commerciale" className="min-h-96 border border-white/10"/></div></section>
-    <section className="mx-auto max-w-7xl px-4 py-16"><div className="grid gap-5 md:grid-cols-3">{[[BookOpen,'Parcours structurés'],[TrendingUp,'Progression mesurée'],[ShieldCheck,'Accès sécurisé']].map(([Icon,label])=>{const C=Icon as typeof BookOpen;return <div key={String(label)} className="rounded-3xl bg-slate-50 p-6"><C className="h-8 w-8 text-[#b98722]"/><h2 className="mt-4 text-xl font-extrabold text-[#071b3a]">{String(label)}</h2></div>})}</div><div className="mt-16 flex items-end justify-between gap-4"><div><p className="font-bold text-[#b98722]">À découvrir</p><h2 className="text-3xl font-extrabold text-[#071b3a]">Nos formations</h2></div><Link href="/formations" className="font-bold text-[#071b3a]">Tout voir <ArrowRight className="inline h-4 w-4"/></Link></div>{courses.length===0?<p className="mt-8 rounded-2xl border p-8 text-center text-slate-600">Le catalogue sera bientôt disponible.</p>:<div className="mt-8 grid gap-6 md:grid-cols-3">{courses.map(c=><article key={c.id} className="rounded-3xl border p-5"><PlaceholderImage label={c.level}/><h3 className="mt-5 text-xl font-extrabold text-[#071b3a]">{c.title}</h3><p className="mt-2 text-sm text-slate-600">{c.short_description}</p><p className="mt-3 text-sm font-bold">{formatDuration(c.duration_minutes)}</p><Link className="mt-5 inline-flex font-bold text-blue-700" href={`/formations/${c.slug}`}>Découvrir <ArrowRight className="ml-2 h-4 w-4"/></Link></article>)}</div>}</section><SiteFooter/></main>;
+export const dynamic = 'force-dynamic';
+
+export default async function Home() {
+  const courses = (await listPublishedCourses()).slice(0, 3);
+  const benefits = [[BookOpen, 'Parcours structurés'], [TrendingUp, 'Progression mesurée'], [ShieldCheck, 'Accès sécurisé']] as const;
+  return (
+    <main className="min-h-screen bg-white">
+      <PublicHeader active="home" />
+      <section className="evr-navy-panel text-white">
+        <div className="mx-auto grid max-w-7xl items-center gap-10 px-4 py-20 lg:grid-cols-2">
+          <div>
+            <p className="font-bold uppercase tracking-[.22em] text-[#f5df99]">École des Vendeurs de Race</p>
+            <h1 className="mt-5 text-5xl font-black leading-tight md:text-6xl">Développez une performance commerciale durable.</h1>
+            <p className="mt-6 max-w-2xl text-lg leading-8 text-slate-200">Des parcours progressifs, concrets et connectés à votre réalité terrain.</p>
+            <div className="mt-8 flex flex-wrap gap-4"><Link href="/formations" className="rounded-full bg-[#d8ad46] px-6 py-3 font-bold text-[#071b3a]">Voir les formations</Link><Link href="/inscription" className="rounded-full border border-white/30 px-6 py-3 font-bold">Créer mon espace</Link></div>
+          </div>
+          <div className="relative min-h-96 overflow-hidden rounded-3xl border border-white/10"><Image src="/images/formations/excellence-commerciale.webp" alt="Atelier de pilotage de la performance commerciale" fill priority sizes="(max-width: 1024px) 100vw, 50vw" className="object-cover" /><div className="absolute inset-0 bg-gradient-to-t from-[#071b3a]/55 to-transparent" /></div>
+        </div>
+      </section>
+      <section className="mx-auto max-w-7xl px-4 py-16">
+        <div className="grid gap-5 md:grid-cols-3">{benefits.map(([Icon, label]) => <div key={label} className="rounded-3xl bg-slate-50 p-6"><Icon className="h-8 w-8 text-[#b98722]" /><h2 className="mt-4 text-xl font-extrabold text-[#071b3a]">{label}</h2></div>)}</div>
+        <div className="mt-16 flex items-end justify-between gap-4"><div><p className="font-bold text-[#b98722]">À découvrir</p><h2 className="text-3xl font-extrabold text-[#071b3a]">Nos formations</h2></div><Link href="/formations" className="font-bold text-[#071b3a]">Tout voir <ArrowRight className="inline h-4 w-4" /></Link></div>
+        {courses.length === 0 ? <p className="mt-8 rounded-2xl border p-8 text-center text-slate-600">Le catalogue sera bientôt disponible.</p> : <div className="mt-8 grid gap-6 md:grid-cols-3">{courses.map(course => <article key={course.id} className="overflow-hidden rounded-3xl border bg-white"><CourseImage slug={course.slug} title={course.title} imageUrl={course.image_url} className="aspect-video" /><div className="p-5"><p className="text-sm font-bold text-[#b98722]">{course.level}</p><h3 className="mt-2 text-xl font-extrabold text-[#071b3a]">{course.title}</h3><p className="mt-2 text-sm text-slate-600">{course.short_description}</p><p className="mt-3 text-sm font-bold">{formatDuration(course.duration_minutes)}</p><Link className="mt-5 inline-flex font-bold text-blue-700" href={`/formations/${course.slug}`}>Découvrir <ArrowRight className="ml-2 h-4 w-4" /></Link></div></article>)}</div>}
+      </section>
+      <SiteFooter />
+    </main>
+  );
 }
