@@ -29,3 +29,23 @@ test('programme public affiche les 5 modules et 10 leçons sans contenu privé',
   await expect(page.getByRole('heading',{name:/Programme · 5 modules · 10 leçons/i})).toBeVisible();
   await expect(page.getByText('Contenu réel du smoke test.')).toHaveCount(0);
 });
+
+test('navigation publique, page à propos et formulaire contact',async({page})=>{
+  await page.goto('/');
+  await expect(page.getByRole('link',{name:'À propos de nous'}).first()).toBeVisible();
+  await expect(page.getByRole('link',{name:'Contactez-nous'}).first()).toBeVisible();
+  await page.goto('/a-propos');
+  await expect(page.getByRole('heading',{name:/plateforme dédiée aux compétences commerciales/i})).toBeVisible();
+  await page.goto('/contact');
+  await expect(page.getByLabel('Nom complet')).toBeVisible();
+  await expect(page.getByRole('button',{name:'Envoyer mon message'})).toBeEnabled();
+});
+
+for(const width of [375,430,768,1024,1366,1920]){
+  test(`accueil sans débordement horizontal à ${width}px`,async({page})=>{
+    await page.setViewportSize({width,height:900});
+    await page.goto('/');
+    const sizes=await page.evaluate(()=>({scroll:document.documentElement.scrollWidth,client:document.documentElement.clientWidth}));
+    expect(sizes.scroll).toBeLessThanOrEqual(sizes.client+1);
+  });
+}

@@ -46,13 +46,15 @@ export async function PublicHeader({ active = '' }: { active?: string }) {
         <nav className="hidden items-center gap-2 md:flex">
           {item('/', 'Accueil', 'home')}
           {item('/formations', 'Formations', 'formations')}
+          {item('/a-propos', 'À propos de nous', 'about')}
+          {item('/contact', 'Contactez-nous', 'contact')}
           {user ? item(admin ? '/admin' : '/dashboard', admin ? 'Administration' : 'Mon espace', admin ? 'admin' : 'dashboard') : null}
         </nav>
         <div className="flex items-center gap-2">
           {user ? <><span className="hidden text-sm font-semibold text-[#071b3a] sm:inline">{profile?.full_name || user.email}</span><form action={signOutAction}><button className="rounded-full bg-[#071b3a] px-4 py-2 text-sm font-semibold text-white">Déconnexion</button></form></> : <><Link href="/connexion" className="hidden rounded-full border border-[#071b3a] px-4 py-2 text-sm font-semibold text-[#071b3a] sm:inline-flex">Se connecter</Link><Link href="/inscription" className="rounded-full bg-[#071b3a] px-4 py-2 text-sm font-semibold text-white">S’inscrire</Link></>}
         </div>
-        <nav className="order-3 flex w-full items-center justify-center gap-5 border-t border-slate-100 pt-3 text-sm font-semibold md:hidden">
-          <Link href="/">Accueil</Link><Link href="/formations">Formations</Link>{user ? <Link href={admin?'/admin':'/dashboard'}>{admin?'Administration':'Mon espace'}</Link> : <Link href="/connexion">Se connecter</Link>}
+        <nav className="order-3 grid w-full grid-cols-4 items-center gap-2 border-t border-slate-100 pt-3 text-center text-xs font-semibold md:hidden sm:text-sm">
+          <Link href="/">Accueil</Link><Link href="/formations">Formations</Link><Link href="/a-propos">À propos</Link><Link href="/contact">Contact</Link>{user ? <Link href={admin?'/admin':'/dashboard'}>{admin?'Administration':'Mon espace'}</Link> : null}
         </nav>
       </div>
     </header>
@@ -62,32 +64,25 @@ export async function PublicHeader({ active = '' }: { active?: string }) {
 export function SiteFooter() {
   return (
     <footer className="border-t border-slate-200 bg-[#071b3a] text-white">
-      <div className="mx-auto grid max-w-7xl gap-8 px-4 py-10 md:grid-cols-4">
+      <div className="mx-auto grid max-w-7xl gap-8 px-4 py-10 md:grid-cols-3">
         <div className="md:col-span-1">
           <BrandLogo light />
-          <p className="mt-4 text-sm text-slate-300">Plateforme digitale de formation commerciale, paiement sécurisé et affiliation.</p>
+          <p className="mt-4 text-sm text-slate-300">Plateforme de formation commerciale structurée autour de contenus pratiques et d’une progression réelle.</p>
         </div>
         <div>
           <p className="font-bold text-[#d8ad46]">Navigation</p>
           <div className="mt-3 grid gap-2 text-sm text-slate-300">
             <Link href="/formations">Formations</Link>
-            <Link href="/dashboard">Mon espace</Link>
+            <Link href="/a-propos">À propos de nous</Link>
+            <Link href="/contact">Contactez-nous</Link>
+            <Link href="/connexion">Connexion</Link>
           </div>
         </div>
         <div>
           <p className="font-bold text-[#d8ad46]">Support</p>
           <div className="mt-3 grid gap-2 text-sm text-slate-300">
-            <span>Contact</span>
-            <span>Conditions générales</span>
-            <span>Politique de confidentialité</span>
-          </div>
-        </div>
-        <div>
-          <p className="font-bold text-[#d8ad46]">Réseaux sociaux</p>
-          <div className="mt-4 flex gap-3 text-sm">
-            <span className="rounded-full bg-white/10 px-3 py-2">f</span>
-            <span className="rounded-full bg-white/10 px-3 py-2">x</span>
-            <span className="rounded-full bg-white/10 px-3 py-2">in</span>
+            <Link href="/conditions-utilisation">Conditions d’utilisation</Link>
+            <Link href="/confidentialite">Politique de confidentialité</Link>
           </div>
         </div>
       </div>

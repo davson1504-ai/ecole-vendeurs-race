@@ -1,14 +1,15 @@
 import Link from 'next/link';
-import { BookOpen, CircleHelp, LayoutDashboard, LogOut, TrendingUp, UserRound } from 'lucide-react';
+import { BookOpen, CircleHelp, FolderOpen, LayoutDashboard, LogOut, TrendingUp, UserRound } from 'lucide-react';
 import { BrandLogo } from '@/components/brand';
 import { signOutAction } from '@/app/(auth)/actions';
 
 const links = [
   ['Tableau de bord', '/dashboard', LayoutDashboard],
-  ['Mes cours', '/dashboard#mes-cours', BookOpen],
-  ['Progression', '/dashboard#progression', TrendingUp],
-  ['Mon profil', '/onboarding?step=profil', UserRound],
-  ['Aide', 'mailto:support@ecole-vendeurs.com', CircleHelp],
+  ['Mes cours', '/mes-cours', BookOpen],
+  ['Progression', '/progression', TrendingUp],
+  ['Ressources', '/ressources', FolderOpen],
+  ['Mon profil', '/profil', UserRound],
+  ['Aide', '/contact', CircleHelp],
 ] as const;
 
 export function LearnerShell({ name, children }: { name: string; children: React.ReactNode }) {
