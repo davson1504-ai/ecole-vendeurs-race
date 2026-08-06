@@ -1,35 +1,304 @@
-import Link from 'next/link';
-import { notFound } from 'next/navigation';
-import { CheckCircle2, Circle, Lock, LogOut, Menu, Play } from 'lucide-react';
-import { createClient } from '@/lib/supabase/server';
-import { signOutAction } from '@/app/(auth)/actions';
-import { LessonViewTracker } from '@/components/lesson-view-tracker';
-import { updateLessonProgress } from './actions';
+import Link from "next/link";
+import { notFound } from "next/navigation";
+import { CheckCircle2, Circle, Lock, LogOut, Menu, Play } from "lucide-react";
+import { createClient } from "@/lib/supabase/server";
+import { signOutAction } from "@/app/(auth)/actions";
+import { LessonViewTracker } from "@/components/lesson-view-tracker";
+import { updateLessonProgress } from "./actions";
 
-type Outline = {module_id:string;module_title:string;module_position:number;lesson_id:string;lesson_slug:string;lesson_title:string;lesson_objective:string|null;lesson_duration_minutes:number;lesson_position:number;is_preview:boolean;locked:boolean};
-type Content = {id:string;slug:string;title:string;objective:string|null;content:string|null;exercise:string|null;duration_minutes:number;position:number;is_preview:boolean;module_id:string};
+type Outline = {
+  module_id: string;
+  module_title: string;
+  module_position: number;
+  lesson_id: string;
+  lesson_slug: string;
+  lesson_title: string;
+  lesson_objective: string | null;
+  lesson_duration_minutes: number;
+  lesson_position: number;
+  is_preview: boolean;
+  locked: boolean;
+};
+type Content = {
+  id: string;
+  slug: string;
+  title: string;
+  objective: string | null;
+  content: string | null;
+  exercise: string | null;
+  resources: string | null;
+  duration_minutes: number;
+  position: number;
+  is_preview: boolean;
+  module_id: string;
+};
 
-export const dynamic='force-dynamic';
-export default async function CoursePlayer({params,searchParams}:{params:Promise<{slug:string}>;searchParams:Promise<{lesson?:string}>}){
-  const [{slug},{lesson:requested}]=await Promise.all([params,searchParams]); const supabase=await createClient();
-  const [{data:{user}},{data:course},{data:outline,error:outlineError}]=await Promise.all([
-    supabase.auth.getUser(),
-    supabase.from('courses').select('id,slug,title,status').eq('slug',slug).eq('status','published').maybeSingle(),
-    supabase.rpc('get_public_course_outline',{course_slug:slug}),
+export const dynamic = "force-dynamic";
+export default async function CoursePlayer({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ slug: string }>;
+  searchParams: Promise<{ lesson?: string }>;
+}) {
+  const [{ slug }, { lesson: requested }] = await Promise.all([
+    params,
+    searchParams,
   ]);
-  if(!course) notFound(); if(outlineError) throw new Error('Le programme du cours est momentanément indisponible.');
-  const rows=(outline??[]) as Outline[]; const moduleIds=[...new Set(rows.map(row=>row.module_id))];
-  const {data:visible}=moduleIds.length?await supabase.from('lessons').select('id,slug,title,objective,content,exercise,duration_minutes,position,is_preview,module_id').in('module_id',moduleIds):{data:[]};
-  const contentById=new Map(((visible??[]) as Content[]).map(lesson=>[lesson.id,lesson]));
-  const chosen=rows.find(row=>row.lesson_slug===requested)??rows.find(row=>!row.locked)??rows[0]; if(!chosen) notFound();
-  const lesson=contentById.get(chosen.lesson_id); const locked=!lesson;
-  const {data:progress}=user?await supabase.from('lesson_progress').select('lesson_id,completed').eq('profile_id',user.id):{data:[]};
-  const done=new Set((progress??[]).filter(item=>item.completed).map(item=>item.lesson_id)); const index=rows.findIndex(row=>row.lesson_id===chosen.lesson_id);
-  const previous=rows.slice(0,index).toReversed().find(row=>!row.locked); const next=rows.slice(index+1).find(row=>!row.locked);
-  const completed=rows.filter(row=>done.has(row.lesson_id)).length; const percent=rows.length?Math.round(completed/rows.length*100):0;
-  const modules=[...new Map(rows.map(row=>[row.module_id,{id:row.module_id,title:row.module_title,position:row.module_position,lessons:rows.filter(item=>item.module_id===row.module_id)}])).values()].toSorted((a,b)=>a.position-b.position);
-  const sidebar=<><Link href={`/formations/${slug}`} className="text-sm text-[#f5df99]">← Retour à la formation</Link><h1 className="mt-4 text-xl font-extrabold">{course.title}</h1><div className="mt-4"><div className="h-2 overflow-hidden rounded-full bg-white/20"><div className="h-full bg-[#d8ad46]" style={{width:`${percent}%`}}/></div><p className="mt-2 text-xs text-slate-300">{completed}/{rows.length} leçons · {percent}%</p></div><div className="mt-7 space-y-6">{modules.map(module=><section key={module.id}><h2 className="font-bold">{module.position}. {module.title}</h2><div className="mt-2 space-y-1">{module.lessons.map(item=><Link key={item.lesson_id} href={`/cours/${slug}?lesson=${item.lesson_slug}`} aria-current={item.lesson_id===chosen.lesson_id?'page':undefined} className={`flex items-center gap-2 rounded-xl p-3 text-sm ${item.lesson_id===chosen.lesson_id?'bg-white text-[#071b3a]':'text-slate-300 hover:bg-white/10'}`}>{done.has(item.lesson_id)?<CheckCircle2 className="h-4 w-4 text-green-500"/>:item.locked?<Lock className="h-4 w-4"/>:<Play className="h-4 w-4"/>}{item.lesson_title}</Link>)}</div></section>)}</div></>;
-  return <main className="min-h-screen bg-slate-50 lg:grid lg:grid-cols-[340px_1fr]"><aside className="hidden bg-[#071b3a] p-5 text-white lg:block">{sidebar}</aside><section className="min-w-0"><header className="flex items-center justify-between border-b bg-white px-4 py-4 sm:px-6"><details className="relative lg:hidden"><summary className="flex cursor-pointer items-center gap-2 font-bold"><Menu className="h-5 w-5"/>Sommaire</summary><div className="absolute left-0 top-10 z-30 max-h-[75vh] w-[min(88vw,340px)] overflow-y-auto rounded-2xl bg-[#071b3a] p-5 text-white shadow-2xl">{sidebar}</div></details><p className="text-sm font-bold text-[#b98722]">{locked?'Accès limité':chosen.is_preview?'Aperçu public':'Formation inscrite'}</p>{user&&<form action={signOutAction}><button aria-label="Se déconnecter" className="flex items-center gap-2 rounded-xl border px-3 py-2 font-bold"><LogOut className="h-4 w-4"/> <span className="hidden sm:inline">Déconnexion</span></button></form>}</header>
-    {locked?<article className="mx-auto max-w-3xl px-5 py-16 text-center"><Lock className="mx-auto h-12 w-12 text-[#b98722]"/><h2 className="mt-5 text-3xl font-extrabold">Leçon réservée aux apprenants inscrits</h2><p className="mt-3 text-slate-600">Votre compte ne dispose pas encore d’un accès actif à ce contenu privé.</p><Link href={user?'/onboarding?step=formation':`/connexion?next=${encodeURIComponent(`/cours/${slug}?lesson=${chosen.lesson_slug}`)}`} className="mt-6 inline-flex rounded-xl bg-[#071b3a] px-5 py-3 font-bold text-white">{user?'Choisir cette formation':'Se connecter'}</Link></article>:<article className="mx-auto max-w-4xl px-5 py-10"><LessonViewTracker lessonId={lesson.id} courseSlug={slug}/><p className="font-bold text-[#b98722]">Module {modules.find(module=>module.id===chosen.module_id)?.position}</p><h2 className="mt-2 text-3xl font-extrabold text-[#071b3a] sm:text-4xl">{lesson.title}</h2><p className="mt-4 rounded-2xl bg-blue-50 p-5 font-semibold text-blue-950">Objectif : {lesson.objective}</p><div className="mt-7 whitespace-pre-line text-lg leading-8 text-slate-700">{lesson.content}</div>{lesson.exercise&&<div className="mt-8 rounded-3xl border border-amber-200 bg-amber-50 p-6"><h3 className="font-extrabold text-amber-950">Mise en application</h3><p className="mt-2 text-amber-900">{lesson.exercise}</p></div>}{user&&!chosen.is_preview&&<form action={updateLessonProgress} className="mt-8"><input type="hidden" name="lessonId" value={lesson.id}/><input type="hidden" name="courseSlug" value={slug}/><input type="hidden" name="completed" value={done.has(lesson.id)?'false':'true'}/><button className="flex items-center gap-2 rounded-xl bg-green-700 px-5 py-3 font-bold text-white">{done.has(lesson.id)?<Circle className="h-5 w-5"/>:<CheckCircle2 className="h-5 w-5"/>}{done.has(lesson.id)?'Marquer à reprendre':'Marquer comme terminée'}</button></form>}<nav className="mt-10 grid gap-3 sm:grid-cols-2">{previous?<Link href={`/cours/${slug}?lesson=${previous.lesson_slug}`} className="rounded-xl border bg-white px-5 py-4 font-bold">← {previous.lesson_title}</Link>:<span/>}{next&&<Link href={`/cours/${slug}?lesson=${next.lesson_slug}`} className="rounded-xl bg-blue-700 px-5 py-4 text-right font-bold text-white">{next.lesson_title} →</Link>}</nav></article>}
-  </section></main>;
+  const supabase = await createClient();
+  const [
+    {
+      data: { user },
+    },
+    { data: course },
+    { data: outline, error: outlineError },
+  ] = await Promise.all([
+    supabase.auth.getUser(),
+    supabase
+      .from("courses")
+      .select("id,slug,title,status")
+      .eq("slug", slug)
+      .eq("status", "published")
+      .maybeSingle(),
+    supabase.rpc("get_public_course_outline", { course_slug: slug }),
+  ]);
+  if (!course) notFound();
+  if (outlineError)
+    throw new Error("Le programme du cours est momentanément indisponible.");
+  const rows = (outline ?? []) as Outline[];
+  const moduleIds = [...new Set(rows.map((row) => row.module_id))];
+  const { data: visible } = moduleIds.length
+    ? await supabase
+        .from("lessons")
+        .select(
+          "id,slug,title,objective,content,exercise,resources,duration_minutes,position,is_preview,module_id",
+        )
+        .in("module_id", moduleIds)
+    : { data: [] };
+  const contentById = new Map(
+    ((visible ?? []) as Content[]).map((lesson) => [lesson.id, lesson]),
+  );
+  const chosen =
+    rows.find((row) => row.lesson_slug === requested) ??
+    rows.find((row) => !row.locked) ??
+    rows[0];
+  if (!chosen) notFound();
+  const lesson = contentById.get(chosen.lesson_id);
+  const locked = !lesson;
+  const { data: progress } = user
+    ? await supabase
+        .from("lesson_progress")
+        .select("lesson_id,completed")
+        .eq("profile_id", user.id)
+    : { data: [] };
+  const done = new Set(
+    (progress ?? [])
+      .filter((item) => item.completed)
+      .map((item) => item.lesson_id),
+  );
+  const index = rows.findIndex((row) => row.lesson_id === chosen.lesson_id);
+  const previous = rows
+    .slice(0, index)
+    .toReversed()
+    .find((row) => !row.locked);
+  const next = rows.slice(index + 1).find((row) => !row.locked);
+  const completed = rows.filter((row) => done.has(row.lesson_id)).length;
+  const percent = rows.length ? Math.round((completed / rows.length) * 100) : 0;
+  const modules = [
+    ...new Map(
+      rows.map((row) => [
+        row.module_id,
+        {
+          id: row.module_id,
+          title: row.module_title,
+          position: row.module_position,
+          lessons: rows.filter((item) => item.module_id === row.module_id),
+        },
+      ]),
+    ).values(),
+  ].toSorted((a, b) => a.position - b.position);
+  const sidebar = (
+    <>
+      <Link href={`/formations/${slug}`} className="text-sm text-[#f5df99]">
+        ← Retour à la formation
+      </Link>
+      <h1 className="mt-4 text-xl font-extrabold">{course.title}</h1>
+      <div className="mt-4">
+        <div className="h-2 overflow-hidden rounded-full bg-white/20">
+          <div
+            className="h-full bg-[#d8ad46]"
+            style={{ width: `${percent}%` }}
+          />
+        </div>
+        <p className="mt-2 text-xs text-slate-300">
+          {completed}/{rows.length} leçons · {percent}%
+        </p>
+      </div>
+      <div className="mt-7 space-y-6">
+        {modules.map((module) => (
+          <section key={module.id}>
+            <h2 className="font-bold">
+              {module.position}. {module.title}
+            </h2>
+            <div className="mt-2 space-y-1">
+              {module.lessons.map((item) => (
+                <Link
+                  key={item.lesson_id}
+                  href={`/cours/${slug}?lesson=${item.lesson_slug}`}
+                  aria-current={
+                    item.lesson_id === chosen.lesson_id ? "page" : undefined
+                  }
+                  className={`flex items-center gap-2 rounded-xl p-3 text-sm ${item.lesson_id === chosen.lesson_id ? "bg-white text-[#071b3a]" : "text-slate-300 hover:bg-white/10"}`}
+                >
+                  {done.has(item.lesson_id) ? (
+                    <CheckCircle2 className="h-4 w-4 text-green-500" />
+                  ) : item.locked ? (
+                    <Lock className="h-4 w-4" />
+                  ) : (
+                    <Play className="h-4 w-4" />
+                  )}
+                  {item.lesson_title}
+                </Link>
+              ))}
+            </div>
+          </section>
+        ))}
+      </div>
+    </>
+  );
+  return (
+    <main className="min-h-screen bg-slate-50 lg:grid lg:grid-cols-[340px_1fr]">
+      <aside className="hidden bg-[#071b3a] p-5 text-white lg:block">
+        {sidebar}
+      </aside>
+      <section className="min-w-0">
+        <header className="flex items-center justify-between border-b bg-white px-4 py-4 sm:px-6">
+          <details className="relative lg:hidden">
+            <summary className="flex cursor-pointer items-center gap-2 font-bold">
+              <Menu className="h-5 w-5" />
+              Sommaire
+            </summary>
+            <div className="absolute left-0 top-10 z-30 max-h-[75vh] w-[min(88vw,340px)] overflow-y-auto rounded-2xl bg-[#071b3a] p-5 text-white shadow-2xl">
+              {sidebar}
+            </div>
+          </details>
+          <p className="text-sm font-bold text-[#b98722]">
+            {locked
+              ? "Accès limité"
+              : chosen.is_preview
+                ? "Aperçu public"
+                : "Formation inscrite"}
+          </p>
+          {user && (
+            <form action={signOutAction}>
+              <button
+                aria-label="Se déconnecter"
+                className="flex items-center gap-2 rounded-xl border px-3 py-2 font-bold"
+              >
+                <LogOut className="h-4 w-4" />{" "}
+                <span className="hidden sm:inline">Déconnexion</span>
+              </button>
+            </form>
+          )}
+        </header>
+        {locked ? (
+          <article className="mx-auto max-w-3xl px-5 py-16 text-center">
+            <Lock className="mx-auto h-12 w-12 text-[#b98722]" />
+            <h2 className="mt-5 text-3xl font-extrabold">
+              Leçon réservée aux apprenants inscrits
+            </h2>
+            <p className="mt-3 text-slate-600">
+              Votre compte ne dispose pas encore d’un accès actif à ce contenu
+              privé.
+            </p>
+            <Link
+              href={
+                user
+                  ? "/onboarding?step=formation"
+                  : `/connexion?next=${encodeURIComponent(`/cours/${slug}?lesson=${chosen.lesson_slug}`)}`
+              }
+              className="mt-6 inline-flex rounded-xl bg-[#071b3a] px-5 py-3 font-bold text-white"
+            >
+              {user ? "Choisir cette formation" : "Se connecter"}
+            </Link>
+          </article>
+        ) : (
+          <article className="mx-auto max-w-4xl px-5 py-10">
+            <LessonViewTracker lessonId={lesson.id} courseSlug={slug} />
+            <p className="font-bold text-[#b98722]">
+              Module{" "}
+              {
+                modules.find((module) => module.id === chosen.module_id)
+                  ?.position
+              }
+            </p>
+            <h2 className="mt-2 text-3xl font-extrabold text-[#071b3a] sm:text-4xl">
+              {lesson.title}
+            </h2>
+            <p className="mt-4 rounded-2xl bg-blue-50 p-5 font-semibold text-blue-950">
+              Objectif : {lesson.objective}
+            </p>
+            <div className="mt-7 whitespace-pre-line text-lg leading-8 text-slate-700">
+              {lesson.content}
+            </div>
+            {lesson.exercise && (
+              <div className="mt-8 rounded-3xl border border-amber-200 bg-amber-50 p-6">
+                <h3 className="font-extrabold text-amber-950">
+                  Mise en application
+                </h3>
+                <p className="mt-2 text-amber-900">{lesson.exercise}</p>
+              </div>
+            )}
+            {lesson.resources && (
+              <section className="mt-8 rounded-3xl border bg-white p-6">
+                <h3 className="font-extrabold text-[#071b3a]">Ressources de la leçon</h3>
+                <p className="mt-3 whitespace-pre-wrap text-slate-600">{lesson.resources}</p>
+              </section>
+            )}
+            {user && !chosen.is_preview && (
+              <form action={updateLessonProgress} className="mt-8">
+                <input type="hidden" name="lessonId" value={lesson.id} />
+                <input type="hidden" name="courseSlug" value={slug} />
+                <input
+                  type="hidden"
+                  name="completed"
+                  value={done.has(lesson.id) ? "false" : "true"}
+                />
+                <button className="flex items-center gap-2 rounded-xl bg-green-700 px-5 py-3 font-bold text-white">
+                  {done.has(lesson.id) ? (
+                    <Circle className="h-5 w-5" />
+                  ) : (
+                    <CheckCircle2 className="h-5 w-5" />
+                  )}
+                  {done.has(lesson.id)
+                    ? "Marquer à reprendre"
+                    : "Marquer comme terminée"}
+                </button>
+              </form>
+            )}
+            <nav className="mt-10 grid gap-3 sm:grid-cols-2">
+              {previous ? (
+                <Link
+                  href={`/cours/${slug}?lesson=${previous.lesson_slug}`}
+                  className="rounded-xl border bg-white px-5 py-4 font-bold"
+                >
+                  ← {previous.lesson_title}
+                </Link>
+              ) : (
+                <span />
+              )}
+              {next && (
+                <Link
+                  href={`/cours/${slug}?lesson=${next.lesson_slug}`}
+                  className="rounded-xl bg-blue-700 px-5 py-4 text-right font-bold text-white"
+                >
+                  {next.lesson_title} →
+                </Link>
+              )}
+            </nav>
+          </article>
+        )}
+      </section>
+    </main>
+  );
 }

@@ -8,6 +8,16 @@ begin
   ) then raise exception 'La date du message de première connexion est absente.'; end if;
 
   if not exists (
+    select 1 from information_schema.columns
+    where table_schema='public' and table_name='profiles'
+      and column_name='preferred_learning_pace'
+  ) or not exists (
+    select 1 from information_schema.columns
+    where table_schema='public' and table_name='profiles'
+      and column_name='weekly_lesson_goal'
+  ) then raise exception 'Les préférences d’apprentissage sont absentes.'; end if;
+
+  if not exists (
     select 1 from pg_tables
     where schemaname='public' and tablename='contact_messages' and rowsecurity
   ) then raise exception 'RLS doit être active sur contact_messages.'; end if;
