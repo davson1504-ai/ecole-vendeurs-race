@@ -7,6 +7,7 @@ import { requireUser } from '@/lib/auth/authorization';
 const profileSchema = z.object({
   full_name: z.string().trim().min(2), phone: z.string().trim().min(6),
   city_country: z.string().trim().min(2), affiliate_code: z.string().trim().max(40).optional(),
+  avatar_url: z.union([z.string().trim().url(), z.literal('')]).optional(),
   terms: z.literal('on'),
 });
 
@@ -14,7 +15,7 @@ export async function saveProfileAction(formData: FormData) {
   const parsed = profileSchema.safeParse(Object.fromEntries(formData));
   if (!parsed.success) redirect('/onboarding?step=profil&error=profil-incomplet');
   const { supabase, user } = await requireUser('/onboarding');
-  const profile = { full_name: parsed.data.full_name, phone: parsed.data.phone, city_country: parsed.data.city_country, affiliate_code: parsed.data.affiliate_code || null };
+  const profile = { full_name: parsed.data.full_name, phone: parsed.data.phone, city_country: parsed.data.city_country, affiliate_code: parsed.data.affiliate_code || null, avatar_url: parsed.data.avatar_url || null };
   const { error } = await supabase.from('profiles').update({ ...profile, terms_accepted_at: new Date().toISOString() }).eq('id', user.id);
   if (error) redirect('/onboarding?step=profil&error=enregistrement');
   redirect('/onboarding?step=formation');
