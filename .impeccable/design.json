@@ -1,0 +1,137 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-08-18T11:45:58.2248559+00:00",
+  "title": "Design System: Ecole des Vendeurs de Race",
+  "extensions": {
+    "colorMeta": {
+      "academic-ink": { "role": "primary", "displayName": "Encre academique", "canonical": "#071B3A", "tonalRamp": ["#020914", "#071B3A", "#12345F", "#31547A", "#637C9B", "#9DADBF", "#D4DCE5", "#F3F6F9"] },
+      "ink": { "role": "neutral", "displayName": "Encre de lecture", "canonical": "#101828", "tonalRamp": ["#070B12", "#101828", "#344054", "#475467", "#667085", "#98A2B3", "#D0D5DD", "#F2F4F7"] },
+      "progression-gold": { "role": "secondary", "displayName": "Or de progression", "canonical": "#D8AD46", "tonalRamp": ["#2D2105", "#513C0A", "#765A14", "#9E7A24", "#D8AD46", "#E7C976", "#F3E3AF", "#FBF6E7"] },
+      "pedagogical-bronze": { "role": "secondary", "displayName": "Bronze pedagogique", "canonical": "#B98722", "tonalRamp": ["#291B03", "#4C3105", "#714B0A", "#966716", "#B98722", "#D4AA58", "#E9D09A", "#F8F0DE"] },
+      "fresh-paper": { "role": "neutral", "displayName": "Papier frais", "canonical": "#F8FAFC", "tonalRamp": ["#1F2933", "#344250", "#526170", "#748392", "#9CA9B5", "#C3CDD6", "#E4EAF0", "#F8FAFC"] },
+      "surface": { "role": "neutral", "displayName": "Surface", "canonical": "#FFFFFF", "tonalRamp": ["#262626", "#404040", "#666666", "#8C8C8C", "#B3B3B3", "#D9D9D9", "#F0F0F0", "#FFFFFF"] },
+      "surface-muted": { "role": "neutral", "displayName": "Surface attenuee", "canonical": "#F2F4F7", "tonalRamp": ["#20242A", "#39404A", "#59626E", "#7C8692", "#A4ADB7", "#C9CFD6", "#E4E7EC", "#F2F4F7"] },
+      "border": { "role": "neutral", "displayName": "Bordure discrete", "canonical": "#E4E7EC", "tonalRamp": ["#1D2229", "#343A43", "#525A65", "#737C88", "#9BA3AD", "#C1C6CE", "#D8DCE2", "#F2F4F7"] },
+      "divider": { "role": "neutral", "displayName": "Separateur", "canonical": "#EAECF0", "tonalRamp": ["#20242A", "#383E46", "#575F69", "#7A838D", "#A2AAB3", "#C8CDD3", "#DEE1E6", "#F4F5F7"] },
+      "text-muted": { "role": "neutral", "displayName": "Texte secondaire", "canonical": "#667085", "tonalRamp": ["#16191E", "#292F38", "#414957", "#667085", "#818B9E", "#A5ADBA", "#CED3DB", "#F1F3F6"] },
+      "success": { "role": "tertiary", "displayName": "Succes", "canonical": "#16794A", "tonalRamp": ["#032014", "#063A24", "#0A5835", "#16794A", "#3D966B", "#72B894", "#B1D9C5", "#EAF7F0"] },
+      "warning": { "role": "tertiary", "displayName": "Avertissement", "canonical": "#A15C07", "tonalRamp": ["#251300", "#462500", "#6A3902", "#8A4E05", "#A15C07", "#C9822C", "#E7B978", "#FAEED7"] },
+      "danger": { "role": "tertiary", "displayName": "Danger", "canonical": "#B42318", "tonalRamp": ["#2A0503", "#4D0A06", "#74120C", "#961B12", "#B42318", "#D55B52", "#EBA6A0", "#FCECEB"] }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "Grands titres des pages publiques uniquement." },
+      "headline": { "displayName": "Headline", "purpose": "Titres de page et moments structurants." },
+      "title": { "displayName": "Title", "purpose": "Sections, cartes majeures et modules." },
+      "body": { "displayName": "Body", "purpose": "Lecture courante et contenu pedagogique." },
+      "label": { "displayName": "Label", "purpose": "Navigation, controles et metadonnees." }
+    },
+    "shadows": [
+      { "name": "ambient-low", "value": "0 1px 2px rgba(16, 24, 40, 0.05)", "purpose": "Separation minimale d'une carte interactive ou d'un controle." },
+      { "name": "floating", "value": "0 8px 24px rgba(16, 24, 40, 0.08)", "purpose": "Menus, tiroirs et dialogues places au-dessus du contenu." }
+    ],
+    "motion": [
+      { "name": "fast", "value": "120ms cubic-bezier(.2, .8, .2, 1)", "purpose": "Retours de survol, pression et focus." },
+      { "name": "standard", "value": "180ms cubic-bezier(.2, .8, .2, 1)", "purpose": "Transitions d'etat ordinaires." },
+      { "name": "panel", "value": "240ms cubic-bezier(.2, .8, .2, 1)", "purpose": "Ouverture et fermeture des menus, tiroirs et dialogues." }
+    ],
+    "breakpoints": [
+      { "name": "sm", "value": "640px" },
+      { "name": "md", "value": "768px" },
+      { "name": "lg", "value": "1024px" },
+      { "name": "xl", "value": "1280px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Action principale compacte, une seule dominante par zone.",
+      "html": "<button class=\"ds-btn-primary\">Continuer</button>",
+      "css": ".ds-btn-primary{height:40px;padding:0 16px;border:1px solid #071B3A;border-radius:8px;background:#071B3A;color:#FFFFFF;font:600 14px/1.35 Geist Sans,Inter,Arial,sans-serif;transition:background 120ms cubic-bezier(.2,.8,.2,1),border-color 120ms cubic-bezier(.2,.8,.2,1)}.ds-btn-primary:hover{background:#12345F;border-color:#12345F}.ds-btn-primary:active{background:#020914}.ds-btn-primary:focus-visible{outline:2px solid #071B3A;outline-offset:2px}"
+    },
+    {
+      "name": "Accent Button",
+      "kind": "button",
+      "refersTo": "button-accent",
+      "description": "Action importante liee a la progression ou a la selection.",
+      "html": "<button class=\"ds-btn-accent\">Choisir ce parcours</button>",
+      "css": ".ds-btn-accent{height:40px;padding:0 16px;border:1px solid #D8AD46;border-radius:8px;background:#D8AD46;color:#071B3A;font:600 14px/1.35 Geist Sans,Inter,Arial,sans-serif;transition:background 120ms cubic-bezier(.2,.8,.2,1)}.ds-btn-accent:hover{background:#E7C976}.ds-btn-accent:active{background:#B98722}.ds-btn-accent:focus-visible{outline:2px solid #071B3A;outline-offset:2px}"
+    },
+    {
+      "name": "Secondary Button",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Action secondaire calme et clairement delimitee.",
+      "html": "<button class=\"ds-btn-secondary\">Voir le programme</button>",
+      "css": ".ds-btn-secondary{height:40px;padding:0 16px;border:1px solid #E4E7EC;border-radius:8px;background:#FFFFFF;color:#101828;font:600 14px/1.35 Geist Sans,Inter,Arial,sans-serif;transition:background 120ms cubic-bezier(.2,.8,.2,1),border-color 120ms cubic-bezier(.2,.8,.2,1)}.ds-btn-secondary:hover{background:#F8FAFC;border-color:#D0D5DD}.ds-btn-secondary:active{background:#F2F4F7}.ds-btn-secondary:focus-visible{outline:2px solid #071B3A;outline-offset:2px}"
+    },
+    {
+      "name": "Text Field",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Champ lisible avec libelle persistant et focus explicite.",
+      "html": "<label class=\"ds-field\"><span>Adresse email</span><input type=\"email\" placeholder=\"nom@exemple.com\"></label>",
+      "css": ".ds-field{display:grid;gap:8px;color:#101828;font:500 14px/1.35 Geist Sans,Inter,Arial,sans-serif}.ds-field input{height:44px;padding:0 12px;border:1px solid #E4E7EC;border-radius:8px;background:#FFFFFF;color:#101828;font:400 16px/1.5 Geist Sans,Inter,Arial,sans-serif;transition:border-color 120ms cubic-bezier(.2,.8,.2,1)}.ds-field input::placeholder{color:#667085}.ds-field input:hover{border-color:#98A2B3}.ds-field input:focus-visible{border-color:#071B3A;outline:2px solid #D4DCE5;outline-offset:2px}"
+    },
+    {
+      "name": "Navigation",
+      "kind": "nav",
+      "refersTo": "navigation",
+      "description": "Navigation compacte sans pilules, avec indicateur actif discret.",
+      "html": "<nav class=\"ds-nav\" aria-label=\"Navigation principale\"><a href=\"#\" aria-current=\"page\">Formations</a><a href=\"#\">A propos</a><a href=\"#\">Contact</a></nav>",
+      "css": ".ds-nav{display:flex;align-items:center;gap:24px;height:56px;background:#FFFFFF}.ds-nav a{position:relative;padding:19px 0 18px;color:#475467;text-decoration:none;font:500 14px/1.35 Geist Sans,Inter,Arial,sans-serif;transition:color 120ms cubic-bezier(.2,.8,.2,1)}.ds-nav a:hover{color:#101828}.ds-nav a[aria-current=page]{color:#071B3A}.ds-nav a[aria-current=page]::after{content:'';position:absolute;right:0;bottom:0;left:0;height:2px;background:#B98722}.ds-nav a:focus-visible{outline:2px solid #071B3A;outline-offset:4px;border-radius:4px}"
+    },
+    {
+      "name": "Course Card",
+      "kind": "card",
+      "refersTo": "card",
+      "description": "Carte de parcours plate, structuree par l'espace et une bordure fine.",
+      "html": "<article class=\"ds-card\"><span class=\"ds-card-meta\">Debutant · 4 h</span><h3>Fondamentaux de la vente</h3><p>Un parcours progressif pour structurer chaque etape d'un entretien commercial.</p></article>",
+      "css": ".ds-card{max-width:360px;padding:24px;border:1px solid #E4E7EC;border-radius:12px;background:#FFFFFF;color:#101828;font-family:Geist Sans,Inter,Arial,sans-serif;transition:border-color 180ms cubic-bezier(.2,.8,.2,1),box-shadow 180ms cubic-bezier(.2,.8,.2,1)}.ds-card:hover{border-color:#D0D5DD;box-shadow:0 1px 2px rgba(16,24,40,.05)}.ds-card h3{margin:8px 0;font-size:20px;line-height:1.25;font-weight:600}.ds-card p{margin:0;color:#667085;font-size:14px;line-height:1.5}.ds-card-meta{color:#B98722;font-size:13px;line-height:1.35;font-weight:500}"
+    },
+    {
+      "name": "Progress Indicator",
+      "kind": "custom",
+      "refersTo": "progress-indicator",
+      "description": "Signature pedagogique sobre montrant une progression reelle.",
+      "html": "<div class=\"ds-progress\"><div><span>Progression</span><strong>42%</strong></div><div class=\"ds-progress-track\" role=\"progressbar\" aria-valuenow=\"42\" aria-valuemin=\"0\" aria-valuemax=\"100\"><span></span></div></div>",
+      "css": ".ds-progress{display:grid;gap:8px;color:#101828;font-family:Geist Sans,Inter,Arial,sans-serif}.ds-progress>div:first-child{display:flex;justify-content:space-between;gap:16px;font-size:14px;line-height:1.35}.ds-progress strong{font-weight:600}.ds-progress-track{height:6px;overflow:hidden;border-radius:999px;background:#EAECF0}.ds-progress-track span{display:block;width:42%;height:100%;border-radius:inherit;background:#D8AD46;transition:width 180ms cubic-bezier(.2,.8,.2,1)}@media(prefers-reduced-motion:reduce){.ds-progress-track span{transition:none}}"
+    }
+  ],
+  "narrative": {
+    "northStar": "L'Academie de precision",
+    "overview": "L'Ecole des Vendeurs de Race doit ressembler a une institution numerique contemporaine plutot qu'a une collection de composants SaaS. Son langage est sobre, structure, rassurant, precis et premium. La progression pedagogique est le principal signal visuel distinctif : elle donne du rythme aux parcours sans introduire de gamification enfantine.\n\nLa qualite de finition recherchee reprend la discipline des meilleures interfaces Apple : navigation compacte, typographie mesuree, surfaces propres, hierarchie calme, espace intentionnel et interactions discretes. Cette reference fixe un niveau d'execution, pas une identite a copier. L'ancrage propre au produit vient de l'Encre academique, de l'Or de progression, du Bronze pedagogique, des contenus de vente et d'une voix d'ecole exigeante mais accessible.",
+    "keyCharacteristics": [
+      "Surfaces blanches ou gris tres clair, avec une densite calme et fonctionnelle.",
+      "Navigation compacte et texte petit, fonce, net et parfaitement lisible.",
+      "Accent dore rare, associe a une progression, une selection, un accomplissement ou une action importante.",
+      "Composants legers, bordures discretes, rayons mesures et ombres exceptionnelles.",
+      "Mobile traite comme un contexte principal, jamais comme une reduction tardive du desktop."
+    ],
+    "rules": [
+      { "name": "The Rare Gold Rule", "body": "L'or ne colore jamais une page entiere et ne sert pas d'accent decoratif repetitif; chaque occurrence doit communiquer une importance reelle.", "section": "colors" },
+      { "name": "The White Surface Rule", "body": "Une surface blanche reste plate par defaut. La structure vient d'abord de l'espace, ensuite d'une bordure, et seulement en dernier recours d'une ombre.", "section": "colors" },
+      { "name": "The Semantic State Rule", "body": "Succes, avertissement et danger conservent leurs couleurs fonctionnelles et ne sont jamais remplaces par l'or de marque.", "section": "colors" },
+      { "name": "The Quiet Weight Rule", "body": "Le poids 700 est reserve aux titres de page et aux chiffres vraiment prioritaires; boutons, labels et navigation utilisent 500 ou 600.", "section": "typography" },
+      { "name": "The No Viewport Type Rule", "body": "Les tailles de texte ne dependent pas directement de la largeur du viewport; elles changent par paliers responsives explicites.", "section": "typography" },
+      { "name": "The Flat By Default Rule", "body": "Les surfaces au repos sont plates; une ombre doit correspondre a une elevation ou une interaction reelle.", "section": "elevation" },
+      { "name": "The One Depth Signal Rule", "body": "Une carte n'additionne jamais fond colore, bordure forte et ombre pour exprimer la meme separation.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do utiliser l'espace, la typographie et les separateurs avant d'ajouter un conteneur.",
+      "Do reserver l'Or de progression aux etats et actions qui ont une importance pedagogique ou decisionnelle reelle.",
+      "Do conserver des textes de navigation petits, fonces, courts et lisibles.",
+      "Do offrir une cible tactile d'au moins 44px sur mobile et un focus visible sur chaque controle.",
+      "Do concevoir les tableaux, lecteurs, formulaires et menus pour le mobile avant leur extension desktop."
+    ],
+    "donts": [
+      "Don't reproduire une identite Apple, ses composants proprietaires ou son vocabulaire de marque.",
+      "Don't utiliser de gradients decoratifs, de gros aplats bleu nuit repetitifs ou de cartes imbriquees.",
+      "Don't appliquer de grands rayons, des pilules ou des ombres a chaque composant.",
+      "Don't surcharger les dashboards de cartes metriques equivalentes ou de chiffres sans priorite.",
+      "Don't utiliser une typographie excessivement grande ou grasse pour fabriquer artificiellement de la hierarchie.",
+      "Don't introduire une gamification enfantine, des animations spectaculaires ou une esthetique de template SaaS generee."
+    ]
+  }
+}
